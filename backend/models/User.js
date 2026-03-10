@@ -4,9 +4,10 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['brand', 'creator'], required: true },
+  role: { type: String, enum: ['brand', 'creator', 'admin'], required: true },
   bio: { type: String },
   socialLinks: { type: Map, of: String },
+  balance: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });
 

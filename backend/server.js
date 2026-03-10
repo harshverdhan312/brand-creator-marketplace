@@ -5,10 +5,12 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
-const campaignRoutes = require('./routes/campaignRoutes');
 const pitchRoutes = require('./routes/pitchRoutes');
 const escrowRoutes = require('./routes/escrowRoutes');
 const usersRoutes = require('./routes/usersRoutes');
+const disputeRoutes = require('./routes/disputeRoutes');
+const submissionRoutes = require('./routes/submissionRoutes');
+const messageRoutes = require('./routes/messageRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -19,10 +21,12 @@ app.use(cookieParser());
 
 // routes
 app.use('/api/auth', authRoutes);
-app.use('/api/campaigns', campaignRoutes);
 app.use('/api/pitches', pitchRoutes);
 app.use('/api/escrow', escrowRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/disputes', disputeRoutes);
+app.use('/api/submissions', submissionRoutes);
+app.use('/api/messages', messageRoutes);
 
 app.use(errorHandler);
 

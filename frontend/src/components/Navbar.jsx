@@ -13,6 +13,7 @@ export default function Navbar() {
           {user ? (
             <>
               <Link to="/dashboard">Dashboard</Link>
+              <Link to="/messages">Messages</Link>
               <Link to="/profile">Profile</Link>
               {user.role === 'creator' && <Link to="/my-brands">My Brands</Link>}
               {user.role === 'brand' && <Link to="/working-creators">Creators</Link>}

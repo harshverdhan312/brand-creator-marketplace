@@ -1,0 +1,76 @@
+const Submission = require('../models/Submission');
+const Escrow = require('../models/Escrow');
+const Pitch = require('../models/Pitch');
+const Dispute = require('../models/Dispute');
+const Notification = require('../models/Notification');
+const escrowService = require('../utils/escrowService');
+
+exports.createSubmission = async (req, res) => {
+  const { escrowId, pitchId, deliverables, notes } = req.body;
+  const escrow = await Escrow.findById(escrowId);
+  if (!escrow) return res.status(404).json({ message: 'Escrow not found' });
+  if (String(escrow.creatorId) !== String(req.user._id)) return res.status(403).json({ message: 'Not creator' });
+
+  const submission = await Submission.create({ escrowId, pitchId, creatorId: req.user._id, brandId: escrow.brandId, deliverables, notes, status: 'SUBMITTED' });
+
+  // update pitch if available
+  if (pitchId) {
+    const pitch = await Pitch.findById(pitchId);
+    if (pitch) {
+      pitch.status = 'WORK_SUBMITTED';
+      await pitch.save();
+    }
+  }
+
+  await Notification.create({ userId: escrow.brandId, type: 'WORK_SUBMITTED', payload: { submissionId: submission._id, escrowId } });
+  res.json(submission);
+};
+
+exports.acceptSubmission = async (req, res) => {
+  const { id } = req.params; // submission id
+  const submission = await Submission.findById(id);
+  if (!submission) return res.status(404).json({ message: 'Submission not found' });
+  if (String(submission.brandId) !== String(req.user._id)) return res.status(403).json({ message: 'Not brand' });
+
+  submission.status = 'ACCEPTED';
+  await submission.save();
+
+  // release escrow
+  await escrowService.releaseEscrow(submission.escrowId);
+
+  // update pitch status
+  if (submission.pitchId) {
+    const pitch = await Pitch.findById(submission.pitchId);
+    if (pitch) { pitch.status = 'COMPLETED'; await pitch.save(); }
+  }
+
+  await Notification.create({ userId: submission.creatorId, type: 'PAYMENT_RELEASED', payload: { submissionId: submission._id, escrowId: submission.escrowId } });
+  res.json(submission);
+};
+
+exports.rejectSubmission = async (req, res) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+  const submission = await Submission.findById(id);
+  if (!submission) return res.status(404).json({ message: 'Submission not found' });
+  if (String(submission.brandId) !== String(req.user._id)) return res.status(403).json({ message: 'Not brand' });
+
+  submission.status = 'REJECTED';
+  submission.rejectionReason = reason || '';
+  await submission.save();
+
+  // create dispute
+  const dispute = await Dispute.create({ escrowId: submission.escrowId, pitchId: submission.pitchId, creatorId: submission.creatorId, brandId: submission.brandId, reason });
+  await Notification.create({ userId: submission.creatorId, type: 'DISPUTE_OPENED', payload: { disputeId: dispute._id, reason } });
+  res.json({ dispute, submission });
+};
+
+exports.getSubmissionsForCreator = async (req, res) => {
+  const subs = await Submission.find({ creatorId: req.user._id }).populate('escrowId brandId');
+  res.json(subs);
+};
+
+exports.getSubmissionsForBrand = async (req, res) => {
+  const subs = await Submission.find({ brandId: req.user._id }).populate('escrowId creatorId');
+  res.json(subs);
+};

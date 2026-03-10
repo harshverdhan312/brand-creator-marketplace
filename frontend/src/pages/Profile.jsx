@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react'
 import { useParams } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import { getUser, getMe, updateMe } from '../services/userService'
+import ChatBox from '../components/ChatBox'
 import { NotificationContext } from '../context/NotificationContext'
 
 export default function Profile() {
@@ -70,6 +71,10 @@ export default function Profile() {
 
       {!editing && (
         <div className="mt-4">
+          <div className="mb-4 p-3 bg-gray-50 rounded">
+            <div className="font-medium">Account</div>
+            <div className="text-sm text-gray-700">Balance: {profile.balance || 0} INR</div>
+          </div>
           <p className="text-gray-700">{profile.bio}</p>
           <div className="mt-3">
             {profile.socialLinks?.instagram && <div><a className="text-blue-600" href={profile.socialLinks.instagram} target="_blank" rel="noreferrer">Instagram</a></div>}
@@ -92,6 +97,8 @@ export default function Profile() {
           </div>
         </div>
       )}
+
+      
     </div>
   )
 }

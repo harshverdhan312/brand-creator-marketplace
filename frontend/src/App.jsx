@@ -4,12 +4,11 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
-import CampaignDetails from './pages/CampaignDetails'
-import CreateCampaign from './pages/CreateCampaign'
 import PitchPage from './pages/PitchPage'
 import Profile from './pages/Profile'
 import MyBrands from './pages/MyBrands'
 import WorkingCreators from './pages/WorkingCreators'
+import Messages from './pages/Messages'
 import Navbar from './components/Navbar'
 import { AuthProvider } from './context/AuthContext'
 import { NotificationProvider } from './context/NotificationContext'
@@ -26,13 +25,13 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/campaigns/create" element={<CreateCampaign />} />
-            <Route path="/campaigns/:id" element={<CampaignDetails />} />
+            {/* Campaign routes removed */}
             <Route path="/my-brands" element={<MyBrands />} />
             <Route path="/working-creators" element={<WorkingCreators />} />
             <Route path="/pitches/:id" element={<PitchPage />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:id" element={<Profile />} />
+            <Route path="/messages" element={<Messages />} />
             </Routes>
           </main>
         </div>

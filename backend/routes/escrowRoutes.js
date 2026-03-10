@@ -8,6 +8,7 @@ router.get('/brand', auth, role(['brand']), escrowController.getEscrowsForBrand)
 router.get('/creator', auth, role(['creator']), escrowController.getEscrowsForCreator);
 router.post('/:escrowId/submit', auth, role(['creator']), escrowController.submitWork);
 router.post('/:escrowId/approve', auth, role(['brand']), escrowController.approveWork);
+router.post('/:escrowId/reject', auth, role(['brand']), escrowController.rejectWork);
 // working lists
 router.get('/working/brands', auth, role(['creator']), escrowController.getWorkingBrandsForCreator);
 router.get('/working/creators', auth, role(['brand']), escrowController.getWorkingCreatorsForBrand);

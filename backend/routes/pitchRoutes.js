@@ -7,7 +7,6 @@ const role = require('../middleware/roleMiddleware');
 router.post('/', auth, role(['creator']), pitchController.createPitch);
 // pitch directly to a brand
 router.post('/to-brand', auth, role(['creator']), pitchController.createPitch);
-router.get('/campaign/:campaignId', auth, pitchController.listPitchesForCampaign);
 // list all pitches relevant to the logged-in brand
 router.get('/for-brand', auth, role(['brand']), pitchController.listPitchesForBrand);
 router.post('/:id/accept', auth, role(['brand']), pitchController.acceptPitch);

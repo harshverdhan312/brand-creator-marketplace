@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react'
-import { listOpen } from '../services/campaignService'
-import CampaignCard from '../components/CampaignCard'
+// campaigns removed; showing brands/creators only
 import { AuthContext } from '../context/AuthContext'
 import { getBrands, getCreators } from '../services/userService'
 import BrandCard from '../components/BrandCard'
@@ -15,8 +14,7 @@ export default function Home() {
   const { user } = useContext(AuthContext)
 
   useEffect(() => {
-    // default campaigns list
-    listOpen().then(res => setCampaigns(res.data)).catch(() => {})
+    // campaigns removed; no default list
 
     // if logged in, show role-specific lists on home
     if (user && user.role === 'creator') {
@@ -33,16 +31,18 @@ export default function Home() {
     <div>
       <section className="py-10">
         <h1 className="text-3xl font-bold">Brand–Creator Collaboration Marketplace</h1>
-        <p className="text-gray-600 mt-2">Discover campaigns and connect with brands.</p>
+        {user.role === 'creator' ? (
+          <p className="mt-4 text-lg">Discover exciting brand campaigns and connect with top brands to showcase your creativity.</p>
+        ) : (
+          <p className="mt-4 text-lg">Find talented creators to bring your brand campaigns to life and reach new audiences.</p>
+        )}
+        
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {campaigns.map(c => (
-          <CampaignCard key={c._id} id={c._id} title={c.title} description={c.description} budget={c.budget} deadline={c.deadline} />
-        ))}
-      </section>
+      {/* Campaigns removed from UI */}
 
       {user && user.role === 'creator' && (
+        
         <section className="mt-8">
           <h3 className="text-xl font-semibold mb-4">Brands</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

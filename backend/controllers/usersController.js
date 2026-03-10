@@ -12,13 +12,13 @@ exports.listCreators = async (req, res) => {
 
 exports.getUserById = async (req, res) => {
   const { id } = req.params
-  const user = await User.findById(id).select('name bio socialLinks role createdAt')
+  const user = await User.findById(id).select('name bio socialLinks role createdAt balance')
   if (!user) return res.status(404).json({ message: 'User not found' })
   res.json(user)
 }
 
 exports.getMe = async (req, res) => {
-  const user = await User.findById(req.user._id).select('name email bio socialLinks role createdAt')
+  const user = await User.findById(req.user._id).select('name email bio socialLinks role createdAt balance')
   res.json(user)
 }
 
