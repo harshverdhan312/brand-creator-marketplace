@@ -5,3 +5,64 @@
 html, body, #root { height: 100%; }
 
 .container { max-width: 1100px; }
+
+/* Dark neon theme base */
+:root {
+	color-scheme: dark;
+}
+
+html.dark, body.dark {
+	background: radial-gradient(1200px 600px at 10% 10%, rgba(0,229,255,0.04), transparent), radial-gradient(800px 400px at 90% 90%, rgba(255,77,255,0.03), transparent), #06080a;
+	color: #cdefff;
+}
+
+.neon-title {
+	text-shadow: 0 2px 12px rgba(0,229,255,0.12), 0 0 8px rgba(0,229,255,0.06);
+}
+
+.btn-neon {
+	@apply px-6 py-3 rounded-md font-semibold text-sm;
+	background: linear-gradient(90deg, rgba(0,229,255,0.12), rgba(255,77,255,0.06));
+	border: 1px solid rgba(0,229,255,0.12);
+	box-shadow: 0 6px 30px rgba(0,229,255,0.04), 0 0 18px rgba(0,229,255,0.04);
+}
+
+.btn-neon.primary {
+	background: linear-gradient(90deg, rgba(0,229,255,0.12), rgba(0,255,191,0.06));
+	border-color: rgba(0,229,255,0.28);
+	color: white;
+}
+
+.glass-panel {
+	background: rgba(255,255,255,0.02);
+	border: 1px solid rgba(255,255,255,0.04);
+	backdrop-filter: blur(8px);
+}
+
+
+/* Dark mode overrides for common Tailwind utility classes to harmonize components */
+.dark .bg-white { background-color: rgba(255,255,255,0.02) !important; border: 1px solid rgba(255,255,255,0.04) !important; }
+.dark .bg-gray-50 { background-color: transparent !important; }
+.dark .text-gray-600 { color: #9ad5dd !important; }
+.dark .text-gray-700 { color: #8cc7cf !important; }
+.dark .text-gray-500 { color: #7fbfc6 !important; }
+.dark .text-gray-800 { color: #cfeff7 !important; }
+.dark .text-gray-900 { color: #e6ffff !important; }
+.dark .border-gray-200 { border-color: rgba(255,255,255,0.04) !important; }
+.dark .shadow { box-shadow: 0 6px 24px rgba(0,0,0,0.6) !important; }
+
+/* Ensure links and subtle texts look good */
+.dark a { color: inherit; }
+.dark .text-sm { color: #9ad5dd; }
+
+/* Neon shadow utility for elements like navbar */
+.shadow-neon {
+	box-shadow: 0 8px 30px rgba(0,229,255,0.06), 0 2px 8px rgba(255,77,255,0.03);
+	border-bottom: 1px solid rgba(0,229,255,0.04);
+	backdrop-filter: blur(6px);
+	z-index: 40;
+}
+
+/* Cursor trail */
+
+

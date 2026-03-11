@@ -17,7 +17,7 @@ export default function App() {
   return (
     <AuthProvider>
       <NotificationProvider>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-bg-dark text-cyan-100">
           <Navbar />
           <main className="container mx-auto p-4">
             <Routes>
