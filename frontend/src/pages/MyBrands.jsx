@@ -3,6 +3,14 @@ import { getWorkingBrands, getEscrowsForCreator } from '../services/escrowServic
 import { myPitches } from '../services/pitchService'
 import { NotificationContext } from '../context/NotificationContext'
 
+function statusBadgeClass(status) {
+  if (!status) return 'badge-cyan'
+  if (status.includes('ACCEPTED') || status.includes('APPROVED') || status.includes('COMPLETED')) return 'badge-green'
+  if (status.includes('REJECTED')) return 'badge-red'
+  if (status.includes('DISPUTED')) return 'badge-pink'
+  return 'badge-cyan'
+}
+
 export default function MyBrands() {
   const [brands, setBrands] = useState([])
   const [selected, setSelected] = useState(null)
@@ -33,12 +41,26 @@ export default function MyBrands() {
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold mb-4">Brands You're Working For</h2>
-      <div className="grid md:grid-cols-2 gap-4 mb-6">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-1.5 h-8 rounded-full bg-neon-green" />
+        <h2 className="text-2xl font-bold text-white tracking-tight">My Brands</h2>
+      </div>
+      <div className="grid md:grid-cols-2 gap-4 mb-8">
         {brands.map(b => (
-          <div key={b._id} className="bg-white p-4 rounded shadow cursor-pointer" onClick={() => setSelected(b)}>
-            <div className="font-semibold">{b.name}</div>
-            <div className="text-sm text-gray-600">{b.bio}</div>
+          <div
+            key={b._id}
+            className={`card-dark p-5 cursor-pointer transition-all duration-200 ${selected?._id === b._id ? 'border-neon-blue/30 shadow-neon-sm' : ''}`}
+            onClick={() => setSelected(b)}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-neon-blue/10 border border-neon-blue/15 flex items-center justify-center flex-shrink-0">
+                <span className="text-neon-blue font-mono text-sm font-bold">{b.name?.charAt(0)?.toUpperCase()}</span>
+              </div>
+              <div className="min-w-0">
+                <div className="font-semibold text-white">{b.name}</div>
+                <div className="text-sm text-cyan-200/40 truncate">{b.bio}</div>
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -46,17 +68,22 @@ export default function MyBrands() {
       {/* Campaigns removed from UI */}
 
       {selected && (
-        <div className="bg-white p-4 rounded shadow">
-          <h3 className="font-semibold mb-2">Pitches to {selected.name}</h3>
+        <div className="card-dark p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="section-title">Pitches to {selected.name}</h3>
+            <span className="badge badge-cyan">{selectedPitches.length}</span>
+          </div>
           <div className="space-y-3">
-            {selectedPitches.length === 0 && <div className="text-sm text-gray-600">No pitches yet to this brand.</div>}
+            {selectedPitches.length === 0 && <div className="text-sm text-cyan-200/40">No pitches yet to this brand.</div>}
             {selectedPitches.map(p => (
-              <div key={p._id} className="p-3 border rounded">
-                <div className="font-medium">{p.brand ? p.brand.name : selected.name}</div>
-                <div className="text-sm text-gray-600">{p.message}</div>
-                <div className="text-sm">Platforms: {(p.platforms || []).join(', ')}</div>
-                <div className="text-sm">Content: {p.contentCount} • {p.frequency} • {p.pricePerContent} INR/item</div>
-                <div className="text-sm text-gray-500">Status: {p.status}</div>
+              <div key={p._id} className="p-4 rounded-lg bg-surface/50 border border-border-dim">
+                <div className="font-medium text-white">{p.brand ? p.brand.name : selected.name}</div>
+                <p className="text-sm text-cyan-200/50 mt-1">{p.message}</p>
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono text-cyan-200/35">
+                  <span>Platforms: {(p.platforms || []).join(', ')}</span>
+                  <span>{p.contentCount} items • {p.frequency} • ₹{p.pricePerContent}/item</span>
+                </div>
+                <span className={`badge ${statusBadgeClass(p.status)} mt-2`}>{p.status}</span>
               </div>
             ))}
           </div>

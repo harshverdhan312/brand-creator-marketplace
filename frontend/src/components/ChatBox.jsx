@@ -22,18 +22,28 @@ export default function ChatBox({ otherUserId }) {
     setText('')
   }
 
-  if (!conv) return <div>Loading chat...</div>
+  if (!conv) return <div className="flex items-center justify-center p-8 text-cyan-200/40">Loading chat...</div>
 
   return (
-    <div className="border rounded p-3">
-      <div className="h-48 overflow-auto mb-2">
+    <div className="card-dark p-4">
+      <div className="h-56 overflow-auto mb-3 space-y-2 px-1">
         {conv.messages.map(m => (
-          <div key={m._id || Math.random()} className="mb-1"><span className="font-medium">{m.sender?.name || 'User'}:</span> {m.text}</div>
+          <div key={m._id || Math.random()} className="text-sm">
+            <span className="font-medium text-neon-blue font-mono text-xs">{m.sender?.name || 'User'}</span>
+            <span className="text-cyan-200/30 mx-1.5">›</span>
+            <span className="text-cyan-200/70">{m.text}</span>
+          </div>
         ))}
       </div>
-      <div className="flex gap-2">
-        <input value={text} onChange={e => setText(e.target.value)} className="flex-1 p-2 border rounded" placeholder="Message" />
-        <button onClick={handleSend} className="px-3 py-1 bg-blue-600 text-white rounded">Send</button>
+      <div className="flex gap-2 border-t border-border-dim pt-3">
+        <input
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleSend()}
+          className="input-dark flex-1"
+          placeholder="Type a message..."
+        />
+        <button onClick={handleSend} className="btn-action btn-primary px-5">Send</button>
       </div>
     </div>
   )
