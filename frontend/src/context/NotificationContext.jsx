@@ -34,7 +34,7 @@ export const NotificationProvider = ({ children }) => {
           >
             <span className="font-mono text-xs">{toastIcons[n.type] || toastIcons.info}</span>
             {n.message}
-            <button onClick={() => remove(n.id)} className="ml-auto opacity-50 hover:opacity-100 transition-opacity text-xs">✕</button>
+            <button onClick={() => remove(n.id)} aria-label="Close notification" className="ml-auto opacity-50 hover:opacity-100 transition-opacity text-xs">✕</button>
           </div>
         ))}
       </div>

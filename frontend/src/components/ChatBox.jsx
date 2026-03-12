@@ -42,6 +42,7 @@ export default function ChatBox({ otherUserId }) {
           onKeyDown={e => e.key === 'Enter' && handleSend()}
           className="input-dark flex-1"
           placeholder="Type a message..."
+          aria-label="Type a message"
         />
         <button onClick={handleSend} className="btn-action btn-primary px-5">Send</button>
       </div>
