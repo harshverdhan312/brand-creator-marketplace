@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { login as loginApi } from '../services/authService'
 import { AuthContext } from '../context/AuthContext'
 import { NotificationContext } from '../context/NotificationContext'
@@ -24,13 +24,30 @@ export default function Login() {
   }
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow">
-      <h2 className="text-xl font-semibold mb-4">Login</h2>
-      <form onSubmit={handle} className="space-y-4">
-        <input className="w-full p-2 border rounded" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-        <input type="password" className="w-full p-2 border rounded" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
-        <button className="w-full bg-gray-800 text-white py-2 rounded">Login</button>
-      </form>
+    <div className="min-h-[70vh] flex items-center justify-center">
+      <div className="w-full max-w-md card-dark p-8">
+        <div className="text-center mb-8">
+          <div className="w-12 h-12 mx-auto rounded-xl bg-neon-blue/10 border border-neon-blue/20 flex items-center justify-center mb-4">
+            <svg className="w-6 h-6 text-neon-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+          </div>
+          <h2 className="text-2xl font-bold text-white">Welcome back</h2>
+          <p className="text-sm text-cyan-200/40 mt-1">Sign in to your account</p>
+        </div>
+        <form onSubmit={handle} className="space-y-4">
+          <div>
+            <label className="block text-xs font-mono text-cyan-200/50 mb-1.5 uppercase tracking-wider">Email</label>
+            <input className="input-dark" placeholder="you@example.com" type="email" value={email} onChange={e => setEmail(e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-xs font-mono text-cyan-200/50 mb-1.5 uppercase tracking-wider">Password</label>
+            <input type="password" className="input-dark" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
+          </div>
+          <button className="w-full btn-action btn-primary py-3 mt-2 font-semibold">Sign In</button>
+        </form>
+        <div className="mt-6 text-center text-sm text-cyan-200/40">
+          Don't have an account? <Link to="/register" className="text-neon-blue hover:text-neon-green transition-colors">Register</Link>
+        </div>
+      </div>
     </div>
   )
 }

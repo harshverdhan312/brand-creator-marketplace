@@ -17,9 +17,9 @@ export default function App() {
   return (
     <AuthProvider>
       <NotificationProvider>
-        <div className="min-h-screen bg-bg-dark text-cyan-100">
+        <div className="min-h-screen bg-bg-dark text-cyan-100 font-sans">
           <Navbar />
-          <main className="container mx-auto p-4">
+          <main className="container mx-auto px-4 py-6">
             <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />

@@ -7,15 +7,24 @@ import PitchCard from '../components/PitchCard'
 import ReactDOM from 'react-dom'
 import { acceptPitch, rejectPitch } from '../services/pitchService'
 
+function statusBadgeClass(status) {
+  if (!status) return 'badge-cyan'
+  if (status.includes('ACCEPTED') || status.includes('APPROVED') || status.includes('COMPLETED')) return 'badge-green'
+  if (status.includes('REJECTED')) return 'badge-red'
+  if (status.includes('DISPUTED')) return 'badge-pink'
+  if (status.includes('SUBMITTED') || status.includes('PENDING')) return 'badge-amber'
+  return 'badge-cyan'
+}
+
 function BrandDecision({ p, refresh, add }) {
   const [feedback, setFeedback] = React.useState('')
   const [loading, setLoading] = React.useState(false)
   return (
-    <div>
-      <textarea value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Message to creator" className="w-full p-2 border rounded mb-2" />
+    <div className="space-y-2">
+      <textarea value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Message to creator" className="input-dark min-h-[60px] text-xs" />
       <div className="flex gap-2">
-        <button onClick={async () => { setLoading(true); try { await acceptPitch(p._id, { message: feedback }); await refresh(); add('Pitch accepted', 'success'); } catch (e) { add('Failed to accept pitch', 'error') } setLoading(false); }} className="px-3 py-1 bg-green-600 text-white rounded">{loading ? '...' : 'Accept'}</button>
-        <button onClick={async () => { setLoading(true); try { await rejectPitch(p._id, { message: feedback }); await refresh(); add('Pitch rejected', 'info'); } catch (e) { add('Failed to reject pitch', 'error') } setLoading(false); }} className="px-3 py-1 bg-red-600 text-white rounded">{loading ? '...' : 'Reject'}</button>
+        <button onClick={async () => { setLoading(true); try { await acceptPitch(p._id, { message: feedback }); await refresh(); add('Pitch accepted', 'success'); } catch (e) { add('Failed to accept pitch', 'error') } setLoading(false); }} className="btn-action btn-success text-xs">{loading ? '...' : 'Accept'}</button>
+        <button onClick={async () => { setLoading(true); try { await rejectPitch(p._id, { message: feedback }); await refresh(); add('Pitch rejected', 'info'); } catch (e) { add('Failed to reject pitch', 'error') } setLoading(false); }} className="btn-action btn-danger text-xs">{loading ? '...' : 'Reject'}</button>
       </div>
     </div>
   )
@@ -48,41 +57,55 @@ export default function Dashboard() {
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold">Dashboard</h2>
-      <p className="text-gray-600">Welcome, {user?.name}</p>
+      <div className="flex items-center gap-3 mb-1">
+        <div className="w-1.5 h-8 rounded-full bg-neon-blue" />
+        <h2 className="text-2xl font-bold text-white tracking-tight">Dashboard</h2>
+      </div>
+      <p className="text-cyan-200/40 text-sm mb-8 ml-5">Welcome back, <span className="text-neon-blue font-medium">{user?.name}</span></p>
       {/* Campaigns removed from Dashboard */}
 
       {user?.role === 'brand' && (
-        <section className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">Pitches Received</h3>
-          <div className="grid grid-cols-1 gap-3">
+        <section>
+          <div className="flex items-center gap-2 mb-5">
+            <h3 className="section-title">Pitches Received</h3>
+            <span className="badge badge-cyan">{pitches.length}</span>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
             {pitches.map(p => (
-              <div key={p._id} className="bg-white p-4 rounded shadow">
-                <div className="flex justify-between">
-                  <div>
-                    <div className="font-semibold">{p.creatorId?.name || 'Unknown'}</div>
-                    <div className="text-sm text-gray-600">{p.message}</div>
-                    <div className="text-sm text-gray-700 mt-2">{p.priceAmount} {p.priceUnit} (INR)</div>
-                    <div className="text-sm text-gray-700 mt-1">Platforms: {(p.platforms || []).join(', ')}</div>
-                    <div className="text-sm text-gray-700">Content: {p.contentCount} items • {p.frequency} • {p.pricePerContent} INR/item</div>
-                    <div className="mt-2 text-sm">
-                      <strong>Conversation:</strong>
-                      <div className="text-xs text-gray-600 mt-1">
+              <div key={p._id} className="card-dark p-5">
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-md bg-neon-pink/10 border border-neon-pink/15 flex items-center justify-center">
+                        <span className="text-neon-pink font-mono text-xs font-bold">{(p.creatorId?.name || 'U').charAt(0)}</span>
+                      </div>
+                      <span className="font-semibold text-white">{p.creatorId?.name || 'Unknown'}</span>
+                    </div>
+                    <p className="text-sm text-cyan-200/50">{p.message}</p>
+                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono text-cyan-200/35">
+                      <span>₹{p.priceAmount} {p.priceUnit}</span>
+                      <span>Platforms: {(p.platforms || []).join(', ')}</span>
+                      <span>{p.contentCount} items • {p.frequency} • ₹{p.pricePerContent}/item</span>
+                    </div>
+                    {(p.conversation || []).length > 0 && (
+                      <div className="mt-3 p-3 rounded-lg bg-surface/50 border border-border-dim">
+                        <div className="text-xs font-mono text-cyan-200/40 mb-1.5 uppercase tracking-wider">Thread</div>
                         {(p.conversation || []).map((c, i) => (
-                          <div key={i}><span className="font-medium">{String(c.sender) === String(p.creatorId?._id || p.creatorId) ? 'Creator' : 'Brand'}:</span> {c.message}</div>
+                          <div key={i} className="text-xs text-cyan-200/40">
+                            <span className="text-neon-blue/60 font-medium">{String(c.sender) === String(p.creatorId?._id || p.creatorId) ? 'Creator' : 'Brand'}:</span> {c.message}
+                          </div>
                         ))}
                       </div>
-                    </div>
+                    )}
                   </div>
-                  <div className="w-40">
+                  <div className="w-44 flex-shrink-0 space-y-2">
                     {p.status === 'PITCH_SUBMITTED' && (
                       <BrandDecision p={p} refresh={() => getPitchesForBrand().then(r => setPitches(r.data))} add={add} />
                     )}
-                    {/* show view work if there are submissions for this pitch or status indicates work submitted */}
                     {(p.status === 'WORK_SUBMITTED' || brandSubmissions.some(s => String(s.pitchId) === String(p._id))) && (
-                      <div className="mt-2"><button onClick={() => setViewing({ pitchId: p._id })} className="px-3 py-1 bg-indigo-600 text-white rounded">View Work</button></div>
+                      <button onClick={() => setViewing({ pitchId: p._id })} className="btn-action btn-primary w-full text-xs">View Work</button>
                     )}
-                    <div className="text-sm text-gray-500 mt-2">{p.status}</div>
+                    <span className={`badge ${statusBadgeClass(p.status)}`}>{p.status}</span>
                   </div>
                 </div>
               </div>
@@ -93,40 +116,47 @@ export default function Dashboard() {
 
       {/* View Work Modal for Brand */}
       {viewing && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded w-11/12 max-w-3xl">
-            <div className="flex justify-between items-center mb-3">
-              <h4 className="font-semibold">Work Submissions</h4>
-              <button onClick={() => { setViewing(null); getSubmissionsForBrand().then(r => setBrandSubmissions(r.data)).catch(()=>{}) }} className="text-gray-600">Close</button>
+        <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50">
+          <div className="card-dark p-6 w-11/12 max-w-3xl max-h-[80vh] overflow-auto">
+            <div className="flex justify-between items-center mb-5">
+              <h4 className="section-title">Work Submissions</h4>
+              <button onClick={() => { setViewing(null); getSubmissionsForBrand().then(r => setBrandSubmissions(r.data)).catch(()=>{}) }} className="btn-action btn-ghost text-xs">Close</button>
             </div>
-            <div>
+            <div className="space-y-4">
               {brandSubmissions.filter(s => String(s.pitchId) === String(viewing.pitchId)).map(s => (
-                <div key={s._id} className="border p-3 rounded mb-3">
-                  <div className="text-sm text-gray-600">Submitted: {new Date(s.createdAt).toLocaleString()}</div>
-                  <div className="mt-2">
-                    <div className="font-medium">Deliverables</div>
-                    <ul className="list-disc pl-5 text-sm">
-                      {(s.deliverables || []).map((d,i) => (<li key={i}><a className="text-blue-600" href={d.url} target="_blank" rel="noreferrer">{d.url}</a></li>))}
+                <div key={s._id} className="p-4 rounded-lg bg-surface/50 border border-border-dim">
+                  <div className="text-xs font-mono text-cyan-200/35">Submitted: {new Date(s.createdAt).toLocaleString()}</div>
+                  <div className="mt-3">
+                    <div className="text-xs font-mono text-cyan-200/50 uppercase tracking-wider mb-1">Deliverables</div>
+                    <ul className="list-none space-y-1">
+                      {(s.deliverables || []).map((d,i) => (
+                        <li key={i}>
+                          <a className="text-neon-blue hover:text-neon-green transition-colors text-sm font-mono" href={d.url} target="_blank" rel="noreferrer">{d.url}</a>
+                        </li>
+                      ))}
                     </ul>
                   </div>
-                  <div className="mt-2 text-sm">Notes: {s.notes || '-'}</div>
-                  <div className="mt-2 text-sm">Status: {s.status}</div>
+                  <div className="mt-2 text-sm text-cyan-200/50">Notes: {s.notes || '-'}</div>
+                  <div className="mt-2"><span className={`badge ${statusBadgeClass(s.status)}`}>{s.status}</span></div>
                   <div className="mt-3 flex gap-2">
-                    {s.status !== 'ACCEPTED' && <button onClick={async () => { try { await acceptSubmission(s._id); add('Submission accepted and escrow released', 'success'); setViewing(null); getPitchesForBrand().then(r => setPitches(r.data)); getSubmissionsForBrand().then(r => setBrandSubmissions(r.data)); getSubmissionsForCreator().then(r => setCreatorSubmissions(r.data)); } catch (e) { add('Failed to accept', 'error') } }} className="px-3 py-1 bg-green-600 text-white rounded">Accept</button>}
+                    {s.status !== 'ACCEPTED' && <button onClick={async () => { try { await acceptSubmission(s._id); add('Submission accepted and escrow released', 'success'); setViewing(null); getPitchesForBrand().then(r => setPitches(r.data)); getSubmissionsForBrand().then(r => setBrandSubmissions(r.data)); getSubmissionsForCreator().then(r => setCreatorSubmissions(r.data)); } catch (e) { add('Failed to accept', 'error') } }} className="btn-action btn-success text-xs">Accept</button>}
                     {s.status !== 'REJECTED' && <RejectButton submission={s} refresh={() => { getSubmissionsForBrand().then(r => setBrandSubmissions(r.data)); getPitchesForBrand().then(r => setPitches(r.data)); getSubmissionsForCreator().then(r => setCreatorSubmissions(r.data)); setViewing(null); }} add={add} />}
                   </div>
                 </div>
               ))}
-              {brandSubmissions.filter(s => String(s.pitchId) === String(viewing.pitchId)).length === 0 && <div className="text-gray-500">No submissions found for this pitch.</div>}
+              {brandSubmissions.filter(s => String(s.pitchId) === String(viewing.pitchId)).length === 0 && <div className="text-cyan-200/40 text-sm">No submissions found for this pitch.</div>}
             </div>
           </div>
         </div>
       )}
 
       {user?.role === 'creator' && (
-        <section className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">Your Pitches</h3>
-          <div className="grid grid-cols-1 gap-3">
+        <section>
+          <div className="flex items-center gap-2 mb-5">
+            <h3 className="section-title">Your Pitches</h3>
+            <span className="badge badge-cyan">{myPitches.length}</span>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
             {myPitches.map(p => (
               <CreatorPitchItem key={p._id} p={p} refresh={() => fetchMyPitches().then(r => setMyPitches(r.data)).catch(()=>{})} />
             ))}
@@ -135,23 +165,26 @@ export default function Dashboard() {
       )}
 
       {user?.role === 'creator' && (
-        <section className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">My Submissions</h3>
-          <div className="grid grid-cols-1 gap-3">
+        <section className="mt-10">
+          <div className="flex items-center gap-2 mb-5">
+            <h3 className="section-title">My Submissions</h3>
+            <span className="badge badge-pink">{creatorSubmissions.length}</span>
+          </div>
+          <div className="grid grid-cols-1 gap-4">
             {creatorSubmissions.map(s => (
-              <div key={s._id} className="bg-white p-4 rounded shadow">
-                <div className="flex justify-between">
-                  <div>
-                    <div className="font-semibold">{s.brandId?.name || 'Brand'}</div>
-                    <div className="text-sm text-gray-600">Submitted: {new Date(s.createdAt).toLocaleString()}</div>
-                    <div className="text-sm mt-2">Notes: {s.notes || '-'}</div>
-                    {s.status === 'REJECTED' && <div className="mt-2 text-sm text-red-600">Rejected reason: {s.rejectionReason || 'No reason provided'}</div>}
+              <div key={s._id} className="card-dark p-5">
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-white">{s.brandId?.name || 'Brand'}</div>
+                    <div className="text-xs font-mono text-cyan-200/35 mt-1">Submitted: {new Date(s.createdAt).toLocaleString()}</div>
+                    <div className="text-sm text-cyan-200/50 mt-2">Notes: {s.notes || '-'}</div>
+                    {s.status === 'REJECTED' && <div className="mt-2 text-sm text-red-400/80">Rejected: {s.rejectionReason || 'No reason provided'}</div>}
                   </div>
-                  <div className="text-sm text-gray-500">Status: {s.status}</div>
+                  <span className={`badge ${statusBadgeClass(s.status)} flex-shrink-0`}>{s.status}</span>
                 </div>
               </div>
             ))}
-            {creatorSubmissions.length === 0 && <div className="text-gray-500">No submissions</div>}
+            {creatorSubmissions.length === 0 && <div className="text-cyan-200/40 text-sm">No submissions yet.</div>}
           </div>
         </section>
       )}
@@ -174,24 +207,25 @@ function CreatorPitchItem({ p, refresh }) {
     } catch (e) { add('Failed to submit', 'error') }
   }
   return (
-    <div className="bg-white p-4 rounded shadow">
-      <div className="flex justify-between">
-        <div>
-          <div className="font-semibold">{p.brand?.name}</div>
-          <div className="text-sm text-gray-600">{p.message}</div>
+    <div className="card-dark p-5">
+      <div className="flex justify-between items-start gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-white">{p.brand?.name}</div>
+          <p className="text-sm text-cyan-200/50 mt-1">{p.message}</p>
         </div>
-        <div className="text-right">
-          <div className="font-medium">{p.priceAmount} {p.priceUnit} (INR)</div>
-          <div className="text-sm text-gray-500">{p.status}</div>
-          {p.escrowId && <div className="mt-2"><button onClick={() => setOpen(!open)} className="px-3 py-1 bg-blue-600 text-white rounded">Submit Work</button></div>}
+        <div className="text-right flex-shrink-0">
+          <div className="font-mono font-semibold text-white">₹{p.priceAmount}</div>
+          <div className="text-xs text-cyan-200/35">{p.priceUnit}</div>
+          <span className={`badge ${statusBadgeClass(p.status)} mt-1`}>{p.status}</span>
+          {p.escrowId && <div className="mt-2"><button onClick={() => setOpen(!open)} className="btn-action btn-primary text-xs">{open ? 'Cancel' : 'Submit Work'}</button></div>}
         </div>
       </div>
       {open && (
-        <div className="mt-3">
-          <input value={links} onChange={e => setLinks(e.target.value)} className="w-full p-2 border rounded mb-2" placeholder="Deliverable links (comma separated)" />
-          <textarea value={notes} onChange={e => setNotes(e.target.value)} className="w-full p-2 border rounded mb-2" placeholder="Notes" />
+        <div className="mt-4 border-t border-border-dim pt-4 space-y-3">
+          <input value={links} onChange={e => setLinks(e.target.value)} className="input-dark" placeholder="Deliverable links (comma separated)" />
+          <textarea value={notes} onChange={e => setNotes(e.target.value)} className="input-dark min-h-[60px]" placeholder="Notes" />
           <div className="flex justify-end">
-            <button onClick={handleSubmit} className="px-3 py-1 bg-green-600 text-white rounded">Submit</button>
+            <button onClick={handleSubmit} className="btn-action btn-success">Submit</button>
           </div>
         </div>
       )}
@@ -215,13 +249,13 @@ function RejectButton({ submission, refresh, add }) {
   }
   return (
     <div>
-      {!open && <button onClick={() => setOpen(true)} className="px-3 py-1 bg-red-600 text-white rounded">Reject</button>}
+      {!open && <button onClick={() => setOpen(true)} className="btn-action btn-danger text-xs">Reject</button>}
       {open && (
-        <div className="mt-2">
-          <textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="Rejection feedback (required)" className="w-full p-2 border rounded mb-2" />
+        <div className="mt-2 space-y-2">
+          <textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="Rejection feedback (required)" className="input-dark min-h-[50px] text-xs" />
           <div className="flex gap-2">
-            <button onClick={doReject} className="px-3 py-1 bg-red-600 text-white rounded">{loading ? '...' : 'Submit Rejection'}</button>
-            <button onClick={() => setOpen(false)} className="px-3 py-1 border rounded">Cancel</button>
+            <button onClick={doReject} className="btn-action btn-danger text-xs">{loading ? '...' : 'Submit Rejection'}</button>
+            <button onClick={() => setOpen(false)} className="btn-action btn-ghost text-xs">Cancel</button>
           </div>
         </div>
       )}

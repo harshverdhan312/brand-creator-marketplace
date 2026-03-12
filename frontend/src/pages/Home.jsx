@@ -29,22 +29,26 @@ export default function Home() {
 
   return (
     <div>
-      <section className="py-10">
-        <h1 className="text-3xl font-bold">Brand–Creator Collaboration Marketplace</h1>
+      <section className="py-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-1.5 h-8 rounded-full bg-neon-blue" />
+          <h1 className="text-3xl font-bold text-white tracking-tight">Marketplace</h1>
+        </div>
         {user.role === 'creator' ? (
-          <p className="mt-4 text-lg">Discover exciting brand campaigns and connect with top brands to showcase your creativity.</p>
+          <p className="text-cyan-200/50 max-w-xl">Discover exciting brand campaigns and connect with top brands to showcase your creativity.</p>
         ) : (
-          <p className="mt-4 text-lg">Find talented creators to bring your brand campaigns to life and reach new audiences.</p>
+          <p className="text-cyan-200/50 max-w-xl">Find talented creators to bring your brand campaigns to life and reach new audiences.</p>
         )}
-        
       </section>
 
       {/* Campaigns removed from UI */}
 
       {user && user.role === 'creator' && (
-        
-        <section className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">Brands</h3>
+        <section className="mt-4">
+          <div className="flex items-center gap-2 mb-5">
+            <h3 className="section-title">Brands</h3>
+            <span className="badge badge-cyan">{brands.length}</span>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {brands.map(b => <BrandCard key={b._id} brand={b} />)}
           </div>
@@ -52,8 +56,11 @@ export default function Home() {
       )}
 
       {user && user.role === 'brand' && (
-        <section className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">Creators</h3>
+        <section className="mt-4">
+          <div className="flex items-center gap-2 mb-5">
+            <h3 className="section-title">Creators</h3>
+            <span className="badge badge-pink">{creators.length}</span>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {creators.map(c => <CreatorCard key={c._id} creator={c} />)}
           </div>
