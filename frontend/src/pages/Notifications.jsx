@@ -82,7 +82,10 @@ export default function Notifications() {
                 </span>
                 {!n.read && <span className="w-2 h-2 rounded-full bg-neon-blue animate-pulse" />}
               </div>
-              <div className="text-xs text-cyan-200/40 font-mono">
+              {n.payload?.message && (
+                <div className="text-sm text-cyan-200/60 mt-1">{n.payload.message}</div>
+              )}
+              <div className="text-xs text-cyan-200/40 font-mono mt-1">
                 {new Date(n.createdAt).toLocaleString()}
               </div>
             </div>
