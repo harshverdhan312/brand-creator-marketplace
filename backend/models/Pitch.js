@@ -6,7 +6,7 @@ const pitchSchema = new mongoose.Schema({
   brandId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   message: { type: String },
   // amount per content piece
-  priceAmount: { type: Number, required: true },
+  priceAmount: { type: Number, required: true, min: 0 },
   priceUnit: { type: String, default: 'piece' },
   currency: { type: String, default: 'INR' },
   status: { 
@@ -30,7 +30,7 @@ const pitchSchema = new mongoose.Schema({
   platforms: [{ type: String }],
   contentCount: { type: Number },
   frequency: { type: String },
-  pricePerContent: { type: Number },
+  pricePerContent: { type: Number, min: 0 },
   // conversation between creator and brand
   conversation: [{ sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, message: String, createdAt: { type: Date, default: Date.now } }],
   createdAt: { type: Date, default: Date.now }

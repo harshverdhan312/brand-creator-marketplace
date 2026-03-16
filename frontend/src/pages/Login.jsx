@@ -19,7 +19,8 @@ export default function Login() {
       login(res.data.token, res.data.user)
       navigate('/dashboard')
     } catch (err) {
-      add && add('Login failed', 'error')
+      const msg = err?.response?.data?.message || 'Login failed'
+      add && add(msg, 'error')
     }
   }
 

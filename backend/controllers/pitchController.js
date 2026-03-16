@@ -6,6 +6,8 @@ const escrowService = require('../utils/escrowService');
 exports.createPitch = async (req, res) => {
   const { brandId, message, priceAmount, priceUnit, currency, contentIdea, timelineDays, platforms, contentCount, frequency, pricePerContent } = req.body;
   if (!brandId) return res.status(400).json({ message: 'brandId required' });
+  if (priceAmount != null && priceAmount < 0) return res.status(400).json({ message: 'Price amount cannot be negative' });
+  if (pricePerContent != null && pricePerContent < 0) return res.status(400).json({ message: 'Price per content cannot be negative' });
   const brand = require('../models/User');
   const b = await brand.findById(brandId);
   if (!b || b.role !== 'brand') return res.status(400).json({ message: 'Invalid brand' });
@@ -73,8 +75,6 @@ exports.acceptPitch = async (req, res) => {
   });
   await Notification.create({ userId: pitch.creatorId, type: 'PITCH_ACCEPTED', payload: { pitchId: pitch._id, escrowId: escrow._id, brandMessage: message } });
   return res.json({ pitch, escrow });
-
-  return res.status(400).json({ message: 'Cannot accept this pitch' });
 };
 
 exports.getMyPitches = async (req, res) => {

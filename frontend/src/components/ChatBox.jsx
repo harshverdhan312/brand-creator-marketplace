@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { getOrCreateWithUser, sendMessage, getConversation } from '../services/messageService'
+import { getOrCreateWithUser, sendMessage } from '../services/messageService'
+
+function formatTime(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return ''
+  return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
 
 export default function ChatBox({ otherUserId }) {
   const [conv, setConv] = useState(null)
@@ -8,18 +15,28 @@ export default function ChatBox({ otherUserId }) {
   useEffect(() => {
     if (!otherUserId) return
     const load = async () => {
-      const r = await getOrCreateWithUser(otherUserId)
-      setConv(r.data)
+      try {
+        const r = await getOrCreateWithUser(otherUserId)
+        setConv(r.data)
+      } catch (e) {
+        setConv(null)
+      }
     }
     load()
   }, [otherUserId])
 
   const handleSend = async () => {
-    if (!text || !otherUserId) return
-    const payload = { toUserId: otherUserId, text, conversationId: conv?._id }
-    const r = await sendMessage(payload)
-    setConv(r.data)
-    setText('')
+    if (!text.trim() || !otherUserId) return
+    try {
+      const payload = { toUserId: otherUserId, text: text.trim(), conversationId: conv?._id }
+      const r = await sendMessage(payload)
+      // Re-fetch to get populated sender names
+      const fresh = await getOrCreateWithUser(otherUserId)
+      setConv(fresh.data)
+      setText('')
+    } catch (e) {
+      // ignore
+    }
   }
 
   if (!conv) return <div className="flex items-center justify-center p-8 text-cyan-200/40">Loading chat...</div>
@@ -30,7 +47,8 @@ export default function ChatBox({ otherUserId }) {
         {conv.messages.map(m => (
           <div key={m._id || Math.random()} className="text-sm">
             <span className="font-medium text-neon-blue font-mono text-xs">{m.sender?.name || 'User'}</span>
-            <span className="text-cyan-200/30 mx-1.5">›</span>
+            <span className="text-cyan-200/20 mx-1.5 text-xs">{formatTime(m.createdAt)}</span>
+            <span className="text-cyan-200/30 mx-1">›</span>
             <span className="text-cyan-200/70">{m.text}</span>
           </div>
         ))}
