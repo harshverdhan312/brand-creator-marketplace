@@ -7,26 +7,35 @@ export default function BrandCard({ brand }) {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [price, setPrice] = useState('')
-  const [unit, setUnit] = useState('per piece')
   const [platforms, setPlatforms] = useState('')
   const [contentCount, setContentCount] = useState('')
   const [frequency, setFrequency] = useState('')
   const [pricePerContent, setPricePerContent] = useState('')
+  const [contentIdea, setContentIdea] = useState('')
+  const [timelineDays, setTimelineDays] = useState('')
   const { add } = useContext(NotificationContext)
 
   const handlePitch = async (e) => {
     e.preventDefault()
+    const priceNum = Number(price)
+    const ppcNum = Number(pricePerContent)
+    if (priceNum < 0 || ppcNum < 0) {
+      if (add) add('Price values cannot be negative', 'error')
+      return
+    }
       try {
         await sendPitchToBrand({ 
           brandId: brand._id, 
           message, 
-          priceAmount: Number(price), 
-          priceUnit: unit, 
+          priceAmount: priceNum, 
+          priceUnit: 'per piece', 
           currency: 'INR',
           platforms: platforms,
           contentCount: Number(contentCount),
           frequency,
-          pricePerContent: Number(pricePerContent)
+          pricePerContent: ppcNum,
+          contentIdea,
+          timelineDays: timelineDays ? Number(timelineDays) : undefined
         })
         if (add) add('Pitch sent to brand', 'success')
       setOpen(false)
@@ -36,8 +45,11 @@ export default function BrandCard({ brand }) {
       setContentCount('')
       setFrequency('')
       setPricePerContent('')
+      setContentIdea('')
+      setTimelineDays('')
     } catch (err) {
-        if (add) add('Failed to send pitch', 'error')
+        const msg = err?.response?.data?.message || 'Failed to send pitch'
+        if (add) add(msg, 'error')
     }
   }
 
@@ -61,15 +73,41 @@ export default function BrandCard({ brand }) {
       </div>
       {open && (
         <form onSubmit={handlePitch} className="mt-4 space-y-3 border-t border-neon-blue/8 pt-4">
-            <textarea required value={message} onChange={e => setMessage(e.target.value)} className="input-dark min-h-[70px]" placeholder="Pitch message" />
-            <input value={platforms} onChange={e => setPlatforms(e.target.value)} className="input-dark" placeholder="Platforms (comma separated) e.g. Instagram,YouTube" />
-            <div className="flex gap-3">
-              <input required type="number" className="input-dark w-1/3" placeholder="# of items" value={contentCount} onChange={e => setContentCount(e.target.value)} />
-              <input value={frequency} onChange={e => setFrequency(e.target.value)} className="input-dark flex-1" placeholder="Frequency e.g. 2 posts/week" />
+            <div>
+              <label className="block text-xs font-mono text-cyan-200/50 mb-1 uppercase tracking-wider">Pitch Message</label>
+              <textarea required value={message} onChange={e => setMessage(e.target.value)} className="input-dark min-h-[70px]" placeholder="Describe your pitch..." />
+            </div>
+            <div>
+              <label className="block text-xs font-mono text-cyan-200/50 mb-1 uppercase tracking-wider">Content Idea</label>
+              <textarea value={contentIdea} onChange={e => setContentIdea(e.target.value)} className="input-dark min-h-[50px]" placeholder="Describe your content idea..." />
+            </div>
+            <div>
+              <label className="block text-xs font-mono text-cyan-200/50 mb-1 uppercase tracking-wider">Platforms</label>
+              <input value={platforms} onChange={e => setPlatforms(e.target.value)} className="input-dark" placeholder="e.g. Instagram, YouTube" />
             </div>
             <div className="flex gap-3">
-              <input required type="number" className="input-dark flex-1" placeholder="Price per content (INR)" value={pricePerContent} onChange={e => setPricePerContent(e.target.value)} />
-              <input required type="number" className="input-dark w-40" placeholder="Total amount" value={price} onChange={e => setPrice(e.target.value)} />
+              <div className="w-1/3">
+                <label className="block text-xs font-mono text-cyan-200/50 mb-1 uppercase tracking-wider"># of Items</label>
+                <input required type="number" min="0" className="input-dark" placeholder="0" value={contentCount} onChange={e => setContentCount(e.target.value)} />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-mono text-cyan-200/50 mb-1 uppercase tracking-wider">Frequency</label>
+                <input value={frequency} onChange={e => setFrequency(e.target.value)} className="input-dark" placeholder="e.g. 2 posts/week" />
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="w-1/3">
+                <label className="block text-xs font-mono text-cyan-200/50 mb-1 uppercase tracking-wider">Timeline (days)</label>
+                <input type="number" min="0" className="input-dark" placeholder="e.g. 30" value={timelineDays} onChange={e => setTimelineDays(e.target.value)} />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-mono text-cyan-200/50 mb-1 uppercase tracking-wider">Price per Content (INR)</label>
+                <input required type="number" min="0" className="input-dark" placeholder="0" value={pricePerContent} onChange={e => setPricePerContent(e.target.value)} />
+              </div>
+              <div className="w-40">
+                <label className="block text-xs font-mono text-cyan-200/50 mb-1 uppercase tracking-wider">Total Amount (INR)</label>
+                <input required type="number" min="0" className="input-dark" placeholder="0" value={price} onChange={e => setPrice(e.target.value)} />
+              </div>
             </div>
             <div className="flex justify-end">
               <button type="submit" className="btn-action btn-success">Send Pitch</button>

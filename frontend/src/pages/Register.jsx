@@ -29,7 +29,8 @@ export default function Register() {
       login(res.data.token, user)
       navigate('/dashboard')
     } catch (err) {
-      add && add('Registration failed', 'error')
+      const msg = err?.response?.data?.message || 'Registration failed'
+      add && add(msg, 'error')
     }
   }
 

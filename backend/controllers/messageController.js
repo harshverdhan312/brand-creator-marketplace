@@ -1,6 +1,7 @@
 const Conversation = require('../models/Conversation');
 const Notification = require('../models/Notification');
 const Pitch = require('../models/Pitch');
+const mongoose = require('mongoose');
 
 // send message: body { toUserId, text, conversationId? }
 const acceptedStatuses = [
@@ -55,6 +56,7 @@ exports.sendMessage = async (req, res) => {
 
 exports.getConversation = async (req, res) => {
   const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: 'Invalid conversation ID' });
   const conv = await Conversation.findById(id).populate('messages.sender', 'name');
   if (!conv) return res.status(404).json({ message: 'Conversation not found' });
   // ensure requester is a participant
@@ -71,7 +73,7 @@ exports.getConversation = async (req, res) => {
 
 exports.getOrCreateWithUser = async (req, res) => {
   const { userId } = req.params;
-  if (!userId) return res.status(400).json({ message: 'userId required' });
+  if (!userId || !mongoose.Types.ObjectId.isValid(userId)) return res.status(400).json({ message: 'Valid userId required' });
   // ensure users are connected via accepted pitch before creating conversation
   const connected = await hasAcceptedPitchBetween(req.user._id, userId);
   if (!connected) return res.status(403).json({ message: 'Messaging not allowed: no accepted pitch between users' });
