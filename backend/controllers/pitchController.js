@@ -6,8 +6,11 @@ const escrowService = require('../utils/escrowService');
 exports.createPitch = async (req, res) => {
   const { brandId, message, priceAmount, priceUnit, currency, contentIdea, timelineDays, platforms, contentCount, frequency, pricePerContent } = req.body;
   if (!brandId) return res.status(400).json({ message: 'brandId required' });
-  if (priceAmount != null && priceAmount < 0) return res.status(400).json({ message: 'Price amount cannot be negative' });
+  if (!message || !message.trim()) return res.status(400).json({ message: 'Pitch message is required' });
+  if (priceAmount == null || priceAmount < 0) return res.status(400).json({ message: 'Price amount cannot be negative' });
   if (pricePerContent != null && pricePerContent < 0) return res.status(400).json({ message: 'Price per content cannot be negative' });
+  if (contentCount != null && contentCount < 0) return res.status(400).json({ message: 'Content count cannot be negative' });
+  if (timelineDays != null && timelineDays < 0) return res.status(400).json({ message: 'Timeline days cannot be negative' });
   const brand = require('../models/User');
   const b = await brand.findById(brandId);
   if (!b || b.role !== 'brand') return res.status(400).json({ message: 'Invalid brand' });

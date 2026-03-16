@@ -4,7 +4,7 @@ const pitchSchema = new mongoose.Schema({
   creatorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   // direct brand pitch
   brandId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  message: { type: String },
+  message: { type: String, required: true },
   // amount per content piece
   priceAmount: { type: Number, required: true, min: 0 },
   priceUnit: { type: String, default: 'piece' },
@@ -24,11 +24,11 @@ const pitchSchema = new mongoose.Schema({
     ],
     default: 'PITCH_SUBMITTED'
   },
-  timelineDays: { type: Number },
+  timelineDays: { type: Number, min: 0 },
   contentIdea: { type: String },
   // structured pitch details
   platforms: [{ type: String }],
-  contentCount: { type: Number },
+  contentCount: { type: Number, min: 0 },
   frequency: { type: String },
   pricePerContent: { type: Number, min: 0 },
   // conversation between creator and brand

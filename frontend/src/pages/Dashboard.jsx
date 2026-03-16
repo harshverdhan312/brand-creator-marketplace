@@ -1,10 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { myPitches as fetchMyPitches, getPitchesForBrand } from '../services/pitchService'
-import { getSubmissionsForBrand, acceptSubmission, rejectSubmission, getSubmissionsForCreator } from '../services/submissionService'
+import { getSubmissionsForBrand, acceptSubmission, rejectSubmission, getSubmissionsForCreator, createSubmission } from '../services/submissionService'
 import { NotificationContext } from '../context/NotificationContext'
 import PitchCard from '../components/PitchCard'
-import ReactDOM from 'react-dom'
 import { acceptPitch, rejectPitch } from '../services/pitchService'
 
 function statusBadgeClass(status) {
@@ -110,6 +109,7 @@ export default function Dashboard() {
                 </div>
               </div>
             ))}
+            {pitches.length === 0 && <div className="text-cyan-200/40 text-sm">No pitches received yet.</div>}
           </div>
         </section>
       )}
@@ -160,6 +160,7 @@ export default function Dashboard() {
             {myPitches.map(p => (
               <CreatorPitchItem key={p._id} p={p} refresh={() => fetchMyPitches().then(r => setMyPitches(r.data)).catch(()=>{})} />
             ))}
+            {myPitches.length === 0 && <div className="text-cyan-200/40 text-sm">No pitches yet. Go to the Marketplace to pitch to brands.</div>}
           </div>
         </section>
       )}
@@ -200,7 +201,7 @@ function CreatorPitchItem({ p, refresh }) {
   const handleSubmit = async () => {
     if (!p.escrowId) return add('No escrow; cannot submit', 'error')
     try {
-      await (await import('../services/submissionService')).createSubmission({ escrowId: p.escrowId, pitchId: p._id, deliverables: links.split(',').map(u => ({ type: 'link', url: u.trim() })), notes })
+      await createSubmission({ escrowId: p.escrowId, pitchId: p._id, deliverables: links.split(',').map(u => ({ type: 'link', url: u.trim() })), notes })
       add('Submission created', 'success')
       setOpen(false)
       refresh()

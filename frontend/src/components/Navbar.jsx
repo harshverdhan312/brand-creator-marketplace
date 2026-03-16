@@ -40,9 +40,11 @@ export default function Navbar() {
             <>
               <Link to="/dashboard" className={linkClass('/dashboard')}>Dashboard</Link>
               <Link to="/messages" className={linkClass('/messages')}>Messages</Link>
+              <Link to="/notifications" className={linkClass('/notifications')}>Notifications</Link>
               <Link to="/profile" className={linkClass('/profile')}>Profile</Link>
               {user.role === 'creator' && <Link to="/my-brands" className={linkClass('/my-brands')}>My Brands</Link>}
               {user.role === 'brand' && <Link to="/working-creators" className={linkClass('/working-creators')}>Creators</Link>}
+              {user.role === 'admin' && <Link to="/admin" className={linkClass('/admin')}>Admin</Link>}
               <button onClick={logout} className="ml-2 px-3 py-1.5 rounded-md text-sm font-medium text-pink-400/80 hover:text-pink-300 hover:bg-pink-500/10 transition-all duration-200">
                 Logout
               </button>
@@ -75,9 +77,11 @@ export default function Navbar() {
             <>
               <Link to="/dashboard" className={mobileLinkClass('/dashboard')} onClick={closeMenu}>Dashboard</Link>
               <Link to="/messages" className={mobileLinkClass('/messages')} onClick={closeMenu}>Messages</Link>
+              <Link to="/notifications" className={mobileLinkClass('/notifications')} onClick={closeMenu}>Notifications</Link>
               <Link to="/profile" className={mobileLinkClass('/profile')} onClick={closeMenu}>Profile</Link>
               {user.role === 'creator' && <Link to="/my-brands" className={mobileLinkClass('/my-brands')} onClick={closeMenu}>My Brands</Link>}
               {user.role === 'brand' && <Link to="/working-creators" className={mobileLinkClass('/working-creators')} onClick={closeMenu}>Creators</Link>}
+              {user.role === 'admin' && <Link to="/admin" className={mobileLinkClass('/admin')} onClick={closeMenu}>Admin</Link>}
               <button
                 onClick={() => { closeMenu(); logout(); }}
                 className="block w-full text-left px-4 py-2.5 rounded-md text-sm font-medium text-pink-400/80 hover:text-pink-300 hover:bg-pink-500/10 transition-all duration-200"

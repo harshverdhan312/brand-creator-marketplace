@@ -7,6 +7,8 @@ import { NotificationContext } from '../context/NotificationContext'
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const { login } = useContext(AuthContext)
   const navigate = useNavigate()
 
@@ -14,13 +16,24 @@ export default function Login() {
 
   const handle = async (e) => {
     e.preventDefault()
+    setError('')
+    if (!email.trim() || !password) {
+      const msg = 'Please enter email and password'
+      setError(msg)
+      add && add(msg, 'error')
+      return
+    }
+    setSubmitting(true)
     try {
       const res = await loginApi({ email, password })
       login(res.data.token, res.data.user)
       navigate('/dashboard')
     } catch (err) {
       const msg = err?.response?.data?.message || 'Login failed'
+      setError(msg)
       add && add(msg, 'error')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -35,6 +48,11 @@ export default function Login() {
           <p className="text-sm text-cyan-200/40 mt-1">Sign in to your account</p>
         </div>
         <form onSubmit={handle} className="space-y-4">
+          {error && (
+            <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-300 text-sm">
+              {error}
+            </div>
+          )}
           <div>
             <label className="block text-xs font-mono text-cyan-200/50 mb-1.5 uppercase tracking-wider">Email</label>
             <input className="input-dark" placeholder="you@example.com" type="email" value={email} onChange={e => setEmail(e.target.value)} />
@@ -43,7 +61,9 @@ export default function Login() {
             <label className="block text-xs font-mono text-cyan-200/50 mb-1.5 uppercase tracking-wider">Password</label>
             <input type="password" className="input-dark" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
           </div>
-          <button className="w-full btn-action btn-primary py-3 mt-2 font-semibold">Sign In</button>
+          <button disabled={submitting} className="w-full btn-action btn-primary py-3 mt-2 font-semibold disabled:opacity-50">
+            {submitting ? 'Signing In...' : 'Sign In'}
+          </button>
         </form>
         <div className="mt-6 text-center text-sm text-cyan-200/40">
           Don't have an account? <Link to="/register" className="text-neon-blue hover:text-neon-green transition-colors">Register</Link>

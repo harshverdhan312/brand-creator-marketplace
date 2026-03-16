@@ -11,6 +11,8 @@ const usersRoutes = require('./routes/usersRoutes');
 const disputeRoutes = require('./routes/disputeRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 const messageRoutes = require('./routes/messageRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -43,6 +45,8 @@ app.use('/api/users', usersRoutes);
 app.use('/api/disputes', disputeRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.use(errorHandler);
 
