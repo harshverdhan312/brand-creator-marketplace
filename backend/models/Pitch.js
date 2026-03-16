@@ -4,7 +4,7 @@ const pitchSchema = new mongoose.Schema({
   creatorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   // direct brand pitch
   brandId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  message: { type: String },
+  message: { type: String, required: true },
   // amount per content piece
   priceAmount: { type: Number, required: true, min: 0 },
   priceUnit: { type: String, default: 'piece' },

@@ -72,7 +72,6 @@ exports.approveWork = async (req, res) => {
   // update pitch to approved/completed
   const pitch = await Pitch.findOne({ creatorId: escrow.creatorId, brandId: escrow.brandId, priceAmount: escrow.amount, status: { $in: ['WORK_SUBMITTED','APPROVAL_PENDING'] } });
   if (pitch) {
-    pitch.status = 'APPROVED';
     pitch.status = 'COMPLETED';
     await pitch.save();
   }

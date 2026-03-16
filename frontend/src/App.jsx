@@ -9,6 +9,8 @@ import Profile from './pages/Profile'
 import MyBrands from './pages/MyBrands'
 import WorkingCreators from './pages/WorkingCreators'
 import Messages from './pages/Messages'
+import Notifications from './pages/Notifications'
+import AdminPanel from './pages/AdminPanel'
 import Navbar from './components/Navbar'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
@@ -33,6 +35,8 @@ export default function App() {
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/profile/:id" element={<Profile />} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
             </Routes>
           </main>
         </div>
