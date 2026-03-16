@@ -19,8 +19,14 @@ export default function BrandCard({ brand }) {
     e.preventDefault()
     const priceNum = Number(price)
     const ppcNum = Number(pricePerContent)
-    if (priceNum < 0 || ppcNum < 0) {
-      if (add) add('Price values cannot be negative', 'error')
+    const countNum = Number(contentCount)
+    const timelineNum = timelineDays ? Number(timelineDays) : 0
+    if (!message.trim()) {
+      if (add) add('Pitch message is required', 'error')
+      return
+    }
+    if (priceNum < 0 || ppcNum < 0 || countNum < 0 || timelineNum < 0) {
+      if (add) add('Values cannot be negative', 'error')
       return
     }
       try {

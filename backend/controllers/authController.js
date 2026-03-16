@@ -8,8 +8,21 @@ exports.register = async (req, res) => {
   if (!name || !email || !password || !role) {
     return res.status(400).json({ message: 'Required fields missing' });
   }
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: 'Invalid email format' });
+  }
+  // Validate password length
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters' });
+  }
+  // Validate role
+  if (!['brand', 'creator'].includes(role)) {
+    return res.status(400).json({ message: 'Role must be brand or creator' });
+  }
   const existing = await User.findOne({ email });
-  if (existing) return res.status(400).json({ message: 'Email already registered. Please login instead.' });
+  if (existing) return res.status(409).json({ message: 'Email already registered. Please login instead.' });
   const hashed = await bcrypt.hash(password, 10);
   const user = await User.create({ name, email, password: hashed, role, bio, socialLinks });
   const accessToken = signAccessToken({ id: user._id });

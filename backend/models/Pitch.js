@@ -24,11 +24,11 @@ const pitchSchema = new mongoose.Schema({
     ],
     default: 'PITCH_SUBMITTED'
   },
-  timelineDays: { type: Number },
+  timelineDays: { type: Number, min: 0 },
   contentIdea: { type: String },
   // structured pitch details
   platforms: [{ type: String }],
-  contentCount: { type: Number },
+  contentCount: { type: Number, min: 0 },
   frequency: { type: String },
   pricePerContent: { type: Number, min: 0 },
   // conversation between creator and brand
