@@ -25,6 +25,10 @@ export default function BrandCard({ brand }) {
       if (add) add('Pitch message is required', 'error')
       return
     }
+    if (price === '' || pricePerContent === '' || contentCount === '') {
+      if (add) add('All numeric fields are required', 'error')
+      return
+    }
     if (!Number.isFinite(priceNum) || !Number.isFinite(ppcNum) || !Number.isFinite(countNum)) {
       if (add) add('Please enter valid numeric values', 'error')
       return
@@ -101,8 +105,8 @@ export default function BrandCard({ brand }) {
             </div>
             <div className="flex gap-3">
               <div className="w-1/3">
-                <label className="block text-xs font-mono text-cyan-200/50 mb-1 uppercase tracking-wider">Number of Deliverables</label>
-                <input required type="number" min="1" className="input-dark" placeholder="e.g. 3" value={contentCount} onChange={e => setContentCount(e.target.value)} />
+                <label htmlFor={`content-count-${brand._id}`} className="block text-xs font-mono text-cyan-200/50 mb-1 uppercase tracking-wider">Number of Deliverables</label>
+                <input id={`content-count-${brand._id}`} required type="number" min="1" className="input-dark" placeholder="e.g. 3" value={contentCount} onChange={e => setContentCount(e.target.value)} />
                 <div className="text-[10px] text-cyan-200/35 mt-1">Total posts/videos/items in this campaign.</div>
               </div>
               <div className="flex-1">

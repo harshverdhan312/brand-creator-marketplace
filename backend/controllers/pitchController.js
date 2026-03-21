@@ -9,7 +9,13 @@ exports.createPitch = async (req, res) => {
   if (!message || !message.trim()) return res.status(400).json({ message: 'Pitch message is required' });
   if (priceAmount == null || priceAmount < 0) return res.status(400).json({ message: 'Price amount cannot be negative' });
   if (pricePerContent != null && pricePerContent < 0) return res.status(400).json({ message: 'Price per content cannot be negative' });
-  if (contentCount == null || Number(contentCount) < 1) return res.status(400).json({ message: 'Number of deliverables must be at least 1' });
+  const parsedContentCount = Number(contentCount);
+  if (!Number.isFinite(parsedContentCount)) {
+    return res.status(400).json({ message: 'Content count must be a valid number' });
+  }
+  if (parsedContentCount < 1) {
+    return res.status(400).json({ message: 'Number of deliverables must be at least 1' });
+  }
   if (timelineDays != null && timelineDays < 0) return res.status(400).json({ message: 'Timeline days cannot be negative' });
   const brand = require('../models/User');
   const b = await brand.findById(brandId);
@@ -24,7 +30,7 @@ exports.createPitch = async (req, res) => {
     contentIdea,
     timelineDays,
     platforms: Array.isArray(platforms) ? platforms : (platforms ? platforms.split(',').map(s => s.trim()) : []),
-    contentCount: Number(contentCount),
+    contentCount: parsedContentCount,
     frequency,
     pricePerContent: pricePerContent || priceAmount,
     conversation: [{ sender: req.user._id, message }]

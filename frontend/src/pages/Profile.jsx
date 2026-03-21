@@ -116,9 +116,9 @@ export default function Profile() {
           <div className="flex flex-wrap gap-2">
             {canMessage ? (
               <>
-                <button onClick={() => navigate(`/messages?userId=${id}`)} className="btn-action btn-primary text-xs">Connect</button>
+                <button onClick={() => navigate('/messages')} className="btn-action btn-primary text-xs">Messages Overview</button>
                 <button onClick={() => navigate(`/messages?userId=${id}`)} className="btn-action btn-success text-xs">Message</button>
-                <button onClick={() => navigate(`/messages?userId=${id}`)} className="btn-action btn-ghost text-xs">Hire / Invite</button>
+                <button onClick={() => navigate('/dashboard')} className="btn-action btn-ghost text-xs">Hire / Invite</button>
               </>
             ) : (
               <button onClick={() => navigate('/')} className="btn-action btn-primary text-xs">Send Pitch to Connect</button>
