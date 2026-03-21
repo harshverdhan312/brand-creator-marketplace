@@ -11,15 +11,22 @@ function formatTime(dateStr) {
 export default function ChatBox({ otherUserId }) {
   const [conv, setConv] = useState(null)
   const [text, setText] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!otherUserId) return
     const load = async () => {
+      setLoading(true)
+      setError('')
       try {
         const r = await getOrCreateWithUser(otherUserId)
         setConv(r.data)
       } catch (e) {
         setConv(null)
+        setError(e?.response?.data?.message || 'Unable to load chat')
+      } finally {
+        setLoading(false)
       }
     }
     load()
@@ -27,22 +34,34 @@ export default function ChatBox({ otherUserId }) {
 
   const handleSend = async () => {
     if (!text.trim() || !otherUserId) return
+    setError('')
     try {
       const payload = { toUserId: otherUserId, text: text.trim(), conversationId: conv?._id }
-      const r = await sendMessage(payload)
+      await sendMessage(payload)
       // Re-fetch to get populated sender names
       const fresh = await getOrCreateWithUser(otherUserId)
       setConv(fresh.data)
       setText('')
     } catch (e) {
-      // ignore
+      setError(e?.response?.data?.message || 'Failed to send message')
     }
   }
 
-  if (!conv) return <div className="flex items-center justify-center p-8 text-cyan-200/40">Loading chat...</div>
+  if (loading) return <div className="flex items-center justify-center p-8 text-cyan-200/40">Loading chat...</div>
+
+  if (!conv) return (
+    <div className="flex flex-col items-center justify-center p-8 text-cyan-200/40 gap-2">
+      <div>{error || 'Select a valid connection to chat.'}</div>
+    </div>
+  )
 
   return (
     <div className="card-dark p-4">
+      {error && (
+        <div className="mb-3 text-xs text-red-300 border border-red-500/30 bg-red-500/10 rounded-md px-3 py-2">
+          {error}
+        </div>
+      )}
       <div className="h-56 overflow-auto mb-3 space-y-2 px-1">
         {conv.messages.map(m => (
           <div key={m._id || Math.random()} className="text-sm">

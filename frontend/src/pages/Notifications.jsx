@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getNotifications, markRead, markAllRead } from '../services/notificationService'
 
 const typeLabels = {
@@ -24,6 +25,7 @@ const typeBadge = {
 }
 
 export default function Notifications() {
+  const navigate = useNavigate()
   const [notes, setNotes] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -40,13 +42,6 @@ export default function Notifications() {
 
   useEffect(() => { load() }, [])
 
-  const handleMarkRead = async (id) => {
-    try {
-      await markRead(id)
-      setNotes(n => n.map(x => x._id === id ? { ...x, read: true } : x))
-    } catch (e) {}
-  }
-
   const handleMarkAll = async () => {
     try {
       await markAllRead()
@@ -54,12 +49,29 @@ export default function Notifications() {
     } catch (e) {}
   }
 
+  const fallbackLinkByType = (note) => {
+    if (note.type === 'NEW_MESSAGE' && note.payload?.from) return `/messages?userId=${note.payload.from}`
+    if (note.type === 'NEW_PITCH' && note.payload?.pitchId) return `/pitches/${note.payload.pitchId}`
+    if (note.type === 'PITCH_ACCEPTED' || note.type === 'PITCH_REJECTED') return '/messages'
+    return '/dashboard'
+  }
+
+  const handleOpenNotification = async (note) => {
+    if (!note.read) {
+      try {
+        await markRead(note._id)
+      } catch (e) {}
+      setNotes(n => n.map(x => x._id === note._id ? { ...x, read: true } : x))
+    }
+    navigate(note.payload?.link || fallbackLinkByType(note))
+  }
+
   if (loading) return <div className="flex items-center justify-center p-12 text-cyan-200/40">Loading...</div>
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
+    <div className="max-w-2xl mx-auto px-2 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="w-1.5 h-8 rounded-full bg-neon-blue" />
           <h2 className="text-2xl font-bold text-white tracking-tight">Notifications</h2>
           <span className="badge badge-cyan">{notes.filter(n => !n.read).length} unread</span>
@@ -68,15 +80,16 @@ export default function Notifications() {
           <button onClick={handleMarkAll} className="btn-action btn-ghost text-xs">Mark All Read</button>
         )}
       </div>
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2 max-h-[70vh] overflow-y-auto pr-1 sm:pr-0 pb-2">
         {notes.map(n => (
-          <div
+          <button
             key={n._id}
-            className={`card-dark p-4 flex items-start gap-3 cursor-pointer transition-all ${n.read ? 'opacity-60' : ''}`}
-            onClick={() => !n.read && handleMarkRead(n._id)}
+            type="button"
+            className={`card-dark p-4 flex items-start gap-3 text-left w-full transition-all ${n.read ? 'opacity-60' : ''}`}
+            onClick={() => handleOpenNotification(n)}
           >
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
                 <span className={`badge ${typeBadge[n.type] || 'badge-cyan'}`}>
                   {typeLabels[n.type] || n.type}
                 </span>
@@ -89,7 +102,7 @@ export default function Notifications() {
                 {new Date(n.createdAt).toLocaleString()}
               </div>
             </div>
-          </div>
+          </button>
         ))}
         {notes.length === 0 && (
           <div className="text-center text-cyan-200/40 py-12">No notifications yet.</div>

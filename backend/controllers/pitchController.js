@@ -9,7 +9,13 @@ exports.createPitch = async (req, res) => {
   if (!message || !message.trim()) return res.status(400).json({ message: 'Pitch message is required' });
   if (priceAmount == null || priceAmount < 0) return res.status(400).json({ message: 'Price amount cannot be negative' });
   if (pricePerContent != null && pricePerContent < 0) return res.status(400).json({ message: 'Price per content cannot be negative' });
-  if (contentCount != null && contentCount < 0) return res.status(400).json({ message: 'Content count cannot be negative' });
+  const parsedContentCount = Number(contentCount);
+  if (!Number.isFinite(parsedContentCount)) {
+    return res.status(400).json({ message: 'Content count must be a valid number' });
+  }
+  if (parsedContentCount < 1) {
+    return res.status(400).json({ message: 'Number of deliverables must be at least 1' });
+  }
   if (timelineDays != null && timelineDays < 0) return res.status(400).json({ message: 'Timeline days cannot be negative' });
   const brand = require('../models/User');
   const b = await brand.findById(brandId);
@@ -24,12 +30,21 @@ exports.createPitch = async (req, res) => {
     contentIdea,
     timelineDays,
     platforms: Array.isArray(platforms) ? platforms : (platforms ? platforms.split(',').map(s => s.trim()) : []),
-    contentCount: contentCount || 0,
+    contentCount: parsedContentCount,
     frequency,
     pricePerContent: pricePerContent || priceAmount,
     conversation: [{ sender: req.user._id, message }]
   });
-  await Notification.create({ userId: b._id, type: 'NEW_PITCH', payload: { pitchId: pitch._id } });
+  await Notification.create({
+    userId: b._id,
+    type: 'NEW_PITCH',
+    payload: {
+      pitchId: pitch._id,
+      referenceId: pitch._id,
+      link: `/pitches/${pitch._id}`,
+      message: 'You received a new pitch'
+    }
+  });
   return res.status(201).json(pitch);
 };
 
@@ -56,7 +71,17 @@ exports.rejectPitch = async (req, res) => {
   if (message) pitch.conversation.push({ sender: req.user._id, message });
   await pitch.save();
   // notify creator with brand feedback
-  await Notification.create({ userId: pitch.creatorId, type: 'PITCH_REJECTED', payload: { pitchId: pitch._id, brandMessage: message } });
+  await Notification.create({
+    userId: pitch.creatorId,
+    type: 'PITCH_REJECTED',
+    payload: {
+      pitchId: pitch._id,
+      brandMessage: message,
+      referenceId: pitch._id,
+      link: `/pitches/${pitch._id}`,
+      message: message || 'Your pitch was rejected'
+    }
+  });
   res.json(pitch);
 };
 
@@ -76,7 +101,18 @@ exports.acceptPitch = async (req, res) => {
     brandId: req.user._id,
     amount
   });
-  await Notification.create({ userId: pitch.creatorId, type: 'PITCH_ACCEPTED', payload: { pitchId: pitch._id, escrowId: escrow._id, brandMessage: message } });
+  await Notification.create({
+    userId: pitch.creatorId,
+    type: 'PITCH_ACCEPTED',
+    payload: {
+      pitchId: pitch._id,
+      escrowId: escrow._id,
+      brandMessage: message,
+      referenceId: pitch._id,
+      link: `/messages`,
+      message: message || 'Your pitch was accepted'
+    }
+  });
   return res.json({ pitch, escrow });
 };
 

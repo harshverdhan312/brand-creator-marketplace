@@ -27,7 +27,8 @@ async function hasAcceptedPitchBetween(userA, userB) {
 
 exports.sendMessage = async (req, res) => {
   const { toUserId, text, conversationId } = req.body;
-  if (!toUserId || !text) return res.status(400).json({ message: 'toUserId and text required' });
+  const cleanText = typeof text === 'string' ? text.trim() : '';
+  if (!toUserId || !cleanText) return res.status(400).json({ message: 'toUserId and text required' });
 
   // ensure users are connected via an accepted pitch
   const connected = await hasAcceptedPitchBetween(req.user._id, toUserId);
@@ -46,18 +47,29 @@ exports.sendMessage = async (req, res) => {
       conv = await Conversation.create({ participants: [req.user._id, toUserId], messages: [] });
     }
   }
-  conv.messages.push({ sender: req.user._id, text });
+  conv.messages.push({ sender: req.user._id, text: cleanText });
   conv.updatedAt = new Date();
   await conv.save();
   // notification to recipient
-  await Notification.create({ userId: toUserId, type: 'NEW_MESSAGE', payload: { conversationId: conv._id, from: req.user._id, text } });
+  await Notification.create({
+    userId: toUserId,
+    type: 'NEW_MESSAGE',
+    payload: {
+      conversationId: conv._id,
+      from: req.user._id,
+      text: cleanText,
+      referenceId: conv._id,
+      link: `/messages?userId=${req.user._id}`,
+      message: 'You received a new message'
+    }
+  });
   res.json(conv);
 };
 
 exports.getConversation = async (req, res) => {
-  const { id } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: 'Invalid conversation ID' });
-  const conv = await Conversation.findById(id).populate('messages.sender', 'name');
+  const { conversationId } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(conversationId)) return res.status(400).json({ message: 'Invalid conversation ID' });
+  const conv = await Conversation.findById(conversationId).populate('messages.sender', 'name');
   if (!conv) return res.status(404).json({ message: 'Conversation not found' });
   // ensure requester is a participant
   if (!conv.participants.map(p => String(p)).includes(String(req.user._id))) return res.status(403).json({ message: 'Not a participant' });
