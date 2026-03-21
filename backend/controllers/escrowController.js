@@ -56,7 +56,17 @@ exports.submitWork = async (req, res) => {
     pitch.status = 'WORK_SUBMITTED';
     await pitch.save();
     // notify brand
-    await Notification.create({ userId: escrow.brandId, type: 'WORK_SUBMITTED', payload: { pitchId: pitch._id, escrowId: escrow._id } });
+    await Notification.create({
+      userId: escrow.brandId,
+      type: 'WORK_SUBMITTED',
+      payload: {
+        pitchId: pitch._id,
+        escrowId: escrow._id,
+        referenceId: pitch._id,
+        link: '/dashboard',
+        message: 'New work has been submitted'
+      }
+    });
   }
   res.json({ escrow, pitch });
 };
@@ -76,7 +86,16 @@ exports.approveWork = async (req, res) => {
     await pitch.save();
   }
   let campaign = null;
-  await Notification.create({ userId: escrow.creatorId, type: 'PAYMENT_RELEASED', payload: { escrowId: escrow._id } });
+  await Notification.create({
+    userId: escrow.creatorId,
+    type: 'PAYMENT_RELEASED',
+    payload: {
+      escrowId: escrow._id,
+      referenceId: escrow._id,
+      link: '/dashboard',
+      message: 'Payment was released'
+    }
+  });
 
   res.json({ escrow: released, campaign, pitch });
 };
@@ -95,6 +114,15 @@ exports.rejectWork = async (req, res) => {
     await pitch.save();
   }
   const dispute = await Dispute.create({ escrowId: escrow._id, pitchId: pitch ? pitch._id : null, creatorId: escrow.creatorId, brandId: escrow.brandId, reason });
-  await Notification.create({ userId: escrow.creatorId, type: 'DISPUTE_OPENED', payload: { disputeId: dispute._id } });
+  await Notification.create({
+    userId: escrow.creatorId,
+    type: 'DISPUTE_OPENED',
+    payload: {
+      disputeId: dispute._id,
+      referenceId: dispute._id,
+      link: '/dashboard',
+      message: 'A dispute was opened'
+    }
+  });
   res.json({ dispute });
 };

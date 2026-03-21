@@ -1,17 +1,29 @@
 import React, { useEffect, useState, useContext } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import { getUser, getMe, updateMe } from '../services/userService'
-import ChatBox from '../components/ChatBox'
 import { NotificationContext } from '../context/NotificationContext'
+import { myPitches, getPitchesForBrand } from '../services/pitchService'
+
+const acceptedStatuses = [
+  'PITCH_ACCEPTED',
+  'WORK_IN_PROGRESS',
+  'WORK_SUBMITTED',
+  'APPROVAL_PENDING',
+  'APPROVED',
+  'DISPUTED',
+  'COMPLETED'
+]
 
 export default function Profile() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { user } = useContext(AuthContext)
   const { add } = useContext(NotificationContext)
   const [profile, setProfile] = useState(null)
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({ name: '', bio: '', instagram: '', linkedin: '', website: '' })
+  const [canMessage, setCanMessage] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -39,6 +51,29 @@ export default function Profile() {
     })
   }, [profile])
 
+  useEffect(() => {
+    const checkConnection = async () => {
+      if (!user || !id || user._id === id) {
+        setCanMessage(false)
+        return
+      }
+      try {
+        if (user.role === 'brand') {
+          const r = await getPitchesForBrand()
+          setCanMessage((r.data || []).some(p => acceptedStatuses.includes(p.status) && String(p.creatorId?._id || p.creatorId) === String(id)))
+        } else if (user.role === 'creator') {
+          const r = await myPitches()
+          setCanMessage((r.data || []).some(p => acceptedStatuses.includes(p.status) && String(p.brand?.id || p.brandId) === String(id)))
+        } else {
+          setCanMessage(false)
+        }
+      } catch (e) {
+        setCanMessage(false)
+      }
+    }
+    checkConnection()
+  }, [user, id])
+
   const handleSave = async () => {
     try {
       const payload = { name: form.name, bio: form.bio, socialLinks: { instagram: form.instagram, linkedin: form.linkedin, website: form.website } }
@@ -54,6 +89,7 @@ export default function Profile() {
   if (!profile) return <div className="flex items-center justify-center p-12 text-cyan-200/40">Loading...</div>
 
   const isOwn = !id || (user && user._id === profile._id)
+  const isBrandViewingCreator = !!id && !isOwn && user?.role === 'brand' && profile?.role === 'creator'
 
   return (
     <div className="max-w-2xl mx-auto card-dark p-8">
@@ -73,6 +109,26 @@ export default function Profile() {
           </button>
         )}
       </div>
+
+      {isBrandViewingCreator && (
+        <div className="mt-6 p-4 rounded-lg bg-surface/50 border border-border-dim">
+          <div className="text-xs font-mono text-cyan-200/40 uppercase tracking-wider mb-3">Collaboration</div>
+          <div className="flex flex-wrap gap-2">
+            {canMessage ? (
+              <>
+                <button onClick={() => navigate(`/messages?userId=${id}`)} className="btn-action btn-primary text-xs">Connect</button>
+                <button onClick={() => navigate(`/messages?userId=${id}`)} className="btn-action btn-success text-xs">Message</button>
+                <button onClick={() => navigate(`/messages?userId=${id}`)} className="btn-action btn-ghost text-xs">Hire / Invite</button>
+              </>
+            ) : (
+              <button onClick={() => navigate('/')} className="btn-action btn-primary text-xs">Send Pitch to Connect</button>
+            )}
+          </div>
+          {!canMessage && (
+            <div className="text-xs text-cyan-200/40 mt-2">Messaging unlocks after a pitch is accepted.</div>
+          )}
+        </div>
+      )}
 
       {!editing && (
         <div className="mt-6 space-y-4">

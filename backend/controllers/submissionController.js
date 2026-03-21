@@ -22,7 +22,17 @@ exports.createSubmission = async (req, res) => {
     }
   }
 
-  await Notification.create({ userId: escrow.brandId, type: 'WORK_SUBMITTED', payload: { submissionId: submission._id, escrowId } });
+  await Notification.create({
+    userId: escrow.brandId,
+    type: 'WORK_SUBMITTED',
+    payload: {
+      submissionId: submission._id,
+      escrowId,
+      referenceId: submission._id,
+      link: '/dashboard',
+      message: 'New work has been submitted for your review'
+    }
+  });
   res.json(submission);
 };
 
@@ -44,7 +54,17 @@ exports.acceptSubmission = async (req, res) => {
     if (pitch) { pitch.status = 'COMPLETED'; await pitch.save(); }
   }
 
-  await Notification.create({ userId: submission.creatorId, type: 'PAYMENT_RELEASED', payload: { submissionId: submission._id, escrowId: submission.escrowId } });
+  await Notification.create({
+    userId: submission.creatorId,
+    type: 'PAYMENT_RELEASED',
+    payload: {
+      submissionId: submission._id,
+      escrowId: submission.escrowId,
+      referenceId: submission.escrowId,
+      link: '/dashboard',
+      message: 'Payment was released for your completed work'
+    }
+  });
   res.json(submission);
 };
 
@@ -61,7 +81,17 @@ exports.rejectSubmission = async (req, res) => {
 
   // create dispute
   const dispute = await Dispute.create({ escrowId: submission.escrowId, pitchId: submission.pitchId, creatorId: submission.creatorId, brandId: submission.brandId, reason });
-  await Notification.create({ userId: submission.creatorId, type: 'DISPUTE_OPENED', payload: { disputeId: dispute._id, reason } });
+  await Notification.create({
+    userId: submission.creatorId,
+    type: 'DISPUTE_OPENED',
+    payload: {
+      disputeId: dispute._id,
+      reason,
+      referenceId: dispute._id,
+      link: '/dashboard',
+      message: reason || 'A dispute was opened for your submission'
+    }
+  });
   res.json({ dispute, submission });
 };
 

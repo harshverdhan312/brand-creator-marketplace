@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import ChatBox from '../components/ChatBox'
 import { myPitches, getPitchesForBrand } from '../services/pitchService'
@@ -23,10 +24,11 @@ function uniqueById(arr) {
 export default function Messages() {
   const { user } = useContext(AuthContext)
   const [connected, setConnected] = useState([])
-  const [selected, setSelected] = useState(null)
+  const [selectedConversation, setSelectedConversation] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
   const [searching, setSearching] = useState(false)
+  const [searchParams] = useSearchParams()
 
   useEffect(() => {
     const load = async () => {
@@ -49,6 +51,11 @@ export default function Messages() {
     }
     load()
   }, [user])
+
+  useEffect(() => {
+    const userIdFromQuery = searchParams.get('userId')
+    if (userIdFromQuery) setSelectedConversation(userIdFromQuery)
+  }, [searchParams])
 
   // Filter connected users by search query (local filter)
   const filteredConnected = searchQuery.trim()
@@ -104,13 +111,13 @@ export default function Messages() {
           <ul className="space-y-1">
             {filteredConnected.map(c => (
               <li key={c.id}>
-                <button
-                  onClick={() => setSelected(c.id)}
-                  className={`text-left w-full py-2.5 px-3 rounded-lg text-sm transition-all duration-200 ${
-                    selected === c.id
-                      ? 'bg-neon-blue/10 text-neon-blue border border-neon-blue/20'
-                      : 'text-cyan-200/60 hover:bg-surface-light hover:text-cyan-200/80 border border-transparent'
-                  }`}
+                 <button
+                   onClick={() => setSelectedConversation(c.id)}
+                   className={`text-left w-full py-2.5 px-3 rounded-lg text-sm transition-all duration-200 ${
+                     selectedConversation === c.id
+                       ? 'bg-neon-blue/10 text-neon-blue border border-neon-blue/20'
+                       : 'text-cyan-200/60 hover:bg-surface-light hover:text-cyan-200/80 border border-transparent'
+                   }`}
                 >
                   {c.name || 'User'}
                 </button>
@@ -124,13 +131,13 @@ export default function Messages() {
               <ul className="space-y-1">
                 {searchResults.map(u => (
                   <li key={u._id}>
-                    <button
-                      onClick={() => setSelected(u._id)}
-                      className={`text-left w-full py-2.5 px-3 rounded-lg text-sm transition-all duration-200 ${
-                        selected === u._id
-                          ? 'bg-neon-pink/10 text-neon-pink border border-neon-pink/20'
-                          : 'text-cyan-200/40 hover:bg-surface-light hover:text-cyan-200/60 border border-transparent'
-                      }`}
+                     <button
+                       onClick={() => setSelectedConversation(u._id)}
+                       className={`text-left w-full py-2.5 px-3 rounded-lg text-sm transition-all duration-200 ${
+                         selectedConversation === u._id
+                           ? 'bg-neon-pink/10 text-neon-pink border border-neon-pink/20'
+                           : 'text-cyan-200/40 hover:bg-surface-light hover:text-cyan-200/60 border border-transparent'
+                       }`}
                     >
                       {u.name} <span className="text-xs text-cyan-200/20 ml-1">({u.role})</span>
                     </button>
@@ -142,7 +149,7 @@ export default function Messages() {
           {searching && <div className="text-xs text-cyan-200/30 mt-2">Searching...</div>}
         </div>
         <div className="flex-1 p-4">
-          {selected ? <ChatBox otherUserId={selected} /> : (
+          {selectedConversation ? <ChatBox otherUserId={selectedConversation} /> : (
             <div className="flex items-center justify-center h-full text-cyan-200/30 text-sm">
               Select a connection to start messaging.
             </div>

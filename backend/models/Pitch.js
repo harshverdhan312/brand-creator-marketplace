@@ -28,7 +28,7 @@ const pitchSchema = new mongoose.Schema({
   contentIdea: { type: String },
   // structured pitch details
   platforms: [{ type: String }],
-  contentCount: { type: Number, min: 0 },
+  contentCount: { type: Number, min: 1 },
   frequency: { type: String },
   pricePerContent: { type: Number, min: 0 },
   // conversation between creator and brand
