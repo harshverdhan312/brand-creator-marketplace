@@ -17,16 +17,19 @@ export default function PitchPage() {
   const { user } = useContext(AuthContext)
   const [pitches, setPitches] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const load = async () => {
       if (!user) return
       setLoading(true)
+      setError('')
       try {
         const r = user.role === 'brand' ? await getPitchesForBrand() : await myPitches()
         setPitches(r.data || [])
       } catch (e) {
         setPitches([])
+        setError(e?.response?.data?.message || 'Unable to load pitch data right now.')
       } finally {
         setLoading(false)
       }
@@ -46,6 +49,7 @@ export default function PitchPage() {
         <h2 className="text-xl font-bold text-white">Pitch Details</h2>
       </div>
       {loading && <p className="text-cyan-200/40 text-sm">Loading pitch data...</p>}
+      {!loading && error && <p className="text-red-300 text-sm">{error}</p>}
       {!loading && id && !selectedPitch && (
         <p className="text-cyan-200/40 text-sm">Pitch not found or you do not have access.</p>
       )}

@@ -12,7 +12,10 @@ const fallbackLinkByType = (note) => {
   if (note.type === 'PITCH_REJECTED') return '/pitches';
   if ((note.type === 'NEW_PITCH' || note.type === 'PITCH_ACCEPTED') && payload.pitchId) return `/pitches/${payload.pitchId}`;
   if (note.type === 'WORK_SUBMITTED') {
-    if (payload.submissionId || payload.pitchId) return `/dashboard?submissionId=${payload.submissionId || ''}&pitchId=${payload.pitchId || ''}`;
+    const params = new URLSearchParams();
+    if (payload.submissionId) params.set('submissionId', String(payload.submissionId));
+    if (payload.pitchId) params.set('pitchId', String(payload.pitchId));
+    if (params.toString()) return `/dashboard?${params.toString()}`;
     return '/dashboard';
   }
   return '/dashboard';

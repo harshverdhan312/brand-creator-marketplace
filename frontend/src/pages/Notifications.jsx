@@ -49,19 +49,6 @@ export default function Notifications() {
     } catch (e) {}
   }
 
-  const fallbackLinkByType = (note) => {
-    if (note.type === 'NEW_MESSAGE' && note.payload?.from) return `/messages?userId=${note.payload.from}`
-    if ((note.type === 'NEW_PITCH' || note.type === 'PITCH_ACCEPTED') && note.payload?.pitchId) return `/pitches/${note.payload.pitchId}`
-    if (note.type === 'PITCH_REJECTED') return '/pitches'
-    if (note.type === 'WORK_SUBMITTED') {
-      if (note.payload?.submissionId || note.payload?.pitchId) {
-        return `/dashboard?submissionId=${note.payload?.submissionId || ''}&pitchId=${note.payload?.pitchId || ''}`
-      }
-      return '/dashboard'
-    }
-    return '/dashboard'
-  }
-
   const handleOpenNotification = async (note) => {
     if (!note.read) {
       try {
@@ -69,7 +56,7 @@ export default function Notifications() {
       } catch (e) {}
       setNotes(n => n.map(x => x._id === note._id ? { ...x, read: true } : x))
     }
-    navigate(note.link || note.payload?.link || fallbackLinkByType(note))
+    navigate(note.link || note.payload?.link || '/dashboard')
   }
 
   if (loading) return <div className="flex items-center justify-center p-12 text-cyan-200/40">Loading...</div>

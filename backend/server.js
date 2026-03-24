@@ -1,6 +1,7 @@
 require('dotenv').config();
 require('express-async-errors');
 const express = require('express');
+const crypto = require('crypto');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
@@ -36,6 +37,31 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
+
+const csrfSafeMethods = new Set(['GET', 'HEAD', 'OPTIONS']);
+app.use((req, res, next) => {
+  const isSafe = csrfSafeMethods.has(req.method);
+  if (isSafe) {
+    if (!req.cookies.csrfToken) {
+      const csrfToken = crypto.randomBytes(24).toString('hex');
+      res.cookie('csrfToken', csrfToken, {
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production'
+      });
+    }
+    return next();
+  }
+
+  const hasBearer = Boolean(req.headers.authorization && req.headers.authorization.startsWith('Bearer '));
+  if (hasBearer) return next();
+
+  const csrfCookie = req.cookies.csrfToken;
+  const csrfHeader = req.headers['x-csrf-token'];
+  if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
+    return res.status(403).json({ message: 'CSRF token invalid or missing' });
+  }
+  return next();
+});
 
 // routes
 app.use('/api/auth', authRoutes);
