@@ -22,14 +22,14 @@ exports.register = async (req, res) => {
     return res.status(400).json({ message: 'Role must be brand or creator' });
   }
   const existing = await User.findOne({ email });
-  if (existing) return res.status(409).json({ message: 'Email already registered. Please login instead.' });
+  if (existing) return res.status(400).json({ message: 'Email already registered' });
   const hashed = await bcrypt.hash(password, 10);
-  const user = await User.create({ name, email, password: hashed, role, bio, socialLinks });
+  const user = await User.create({ name, email, password: hashed, role, bio, socialLinks: socialLinks || {} });
   const accessToken = signAccessToken({ id: user._id });
   const refreshToken = signRefreshToken({ id: user._id });
   // set refresh token as httpOnly cookie
   res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 });
-  res.status(201).json({ token: accessToken, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+  res.status(201).json({ token: accessToken, user: { _id: user._id, name: user.name, email: user.email, role: user.role } });
 };
 
 // Login
@@ -42,7 +42,7 @@ exports.login = async (req, res) => {
   const accessToken = signAccessToken({ id: user._id });
   const refreshToken = signRefreshToken({ id: user._id });
   res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 });
-  res.json({ token: accessToken, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+  res.json({ token: accessToken, user: { _id: user._id, name: user.name, email: user.email, role: user.role } });
 };
 
 // Refresh access token using refresh token cookie

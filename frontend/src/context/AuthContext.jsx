@@ -29,6 +29,22 @@ export const AuthProvider = ({ children }) => {
     tryRefresh()
   }, [])
 
+  useEffect(() => {
+    const onFocus = async () => {
+      try {
+        const res = await refreshTokenApi()
+        const token = res.data.token
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+        setUser(res.data.user)
+      } catch (err) {
+        setUser(null)
+        delete api.defaults.headers.common['Authorization']
+      }
+    }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [])
+
   const login = useCallback((token, userData) => {
     // server sets refresh cookie; store access token in memory/header
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`
@@ -41,6 +57,7 @@ export const AuthProvider = ({ children }) => {
     loggingOut.current = true
     try { await logoutApi() } catch (e) { /* ignore */ }
     delete api.defaults.headers.common['Authorization']
+    window.dispatchEvent(new Event('auth:logout'))
     setUser(null)
     navigate('/login')
   }, [navigate])

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback } from 'react'
+import React, { createContext, useState, useCallback, useEffect } from 'react'
 
 export const NotificationContext = createContext(null)
 
@@ -23,6 +23,12 @@ export const NotificationProvider = ({ children }) => {
     setTimeout(() => setNotes(n => n.filter(x => x.id !== id)), 6000)
   }, [])
   const remove = (id) => setNotes(n => n.filter(x => x.id !== id))
+  useEffect(() => {
+    const handler = () => setNotes([])
+    window.addEventListener('auth:logout', handler)
+    return () => window.removeEventListener('auth:logout', handler)
+  }, [])
+
   return (
     <NotificationContext.Provider value={{ notes, add, remove }}>
       {children}

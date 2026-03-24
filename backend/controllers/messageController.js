@@ -59,6 +59,7 @@ exports.sendMessage = async (req, res) => {
       from: req.user._id,
       text: cleanText,
       referenceId: conv._id,
+      entityId: conv._id,
       link: `/messages?userId=${req.user._id}`,
       message: 'You received a new message'
     }

@@ -9,6 +9,7 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const { login } = useContext(AuthContext)
   const navigate = useNavigate()
 
@@ -59,7 +60,12 @@ export default function Login() {
           </div>
           <div>
             <label className="block text-xs font-mono text-cyan-200/50 mb-1.5 uppercase tracking-wider">Password</label>
-            <input type="password" className="input-dark" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
+            <div className="relative">
+              <input type={showPassword ? 'text' : 'password'} className="input-dark pr-10" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
+              <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 text-cyan-200/45 hover:text-cyan-200/80 text-xs" onClick={() => setShowPassword(s => !s)} aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
           <button disabled={submitting} className="w-full btn-action btn-primary py-3 mt-2 font-semibold disabled:opacity-50">
             {submitting ? 'Signing In...' : 'Sign In'}

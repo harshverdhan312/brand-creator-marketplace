@@ -31,6 +31,7 @@ export default function App() {
             {/* Campaign routes removed */}
             <Route path="/my-brands" element={<ProtectedRoute><MyBrands /></ProtectedRoute>} />
             <Route path="/working-creators" element={<ProtectedRoute><WorkingCreators /></ProtectedRoute>} />
+            <Route path="/pitches" element={<ProtectedRoute><PitchPage /></ProtectedRoute>} />
             <Route path="/pitches/:id" element={<ProtectedRoute><PitchPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/profile/:id" element={<Profile />} />

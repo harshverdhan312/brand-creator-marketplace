@@ -63,7 +63,8 @@ exports.submitWork = async (req, res) => {
         pitchId: pitch._id,
         escrowId: escrow._id,
         referenceId: pitch._id,
-        link: '/dashboard',
+        entityId: pitch._id,
+        link: `/dashboard?pitchId=${pitch._id}`,
         message: 'New work has been submitted'
       }
     });
@@ -92,6 +93,7 @@ exports.approveWork = async (req, res) => {
     payload: {
       escrowId: escrow._id,
       referenceId: escrow._id,
+      entityId: escrow._id,
       link: '/dashboard',
       message: 'Payment was released'
     }
@@ -120,6 +122,7 @@ exports.rejectWork = async (req, res) => {
     payload: {
       disputeId: dispute._id,
       referenceId: dispute._id,
+      entityId: dispute._id,
       link: '/dashboard',
       message: 'A dispute was opened'
     }

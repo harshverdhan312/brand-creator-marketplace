@@ -4,9 +4,16 @@ const Pitch = require('../models/Pitch');
 const Dispute = require('../models/Dispute');
 const Notification = require('../models/Notification');
 const escrowService = require('../utils/escrowService');
+const mongoose = require('mongoose');
 
 exports.createSubmission = async (req, res) => {
   const { escrowId, pitchId, deliverables, notes } = req.body;
+  if (!escrowId || !mongoose.Types.ObjectId.isValid(escrowId)) {
+    return res.status(400).json({ message: 'Invalid escrow ID format' });
+  }
+  if (pitchId && !mongoose.Types.ObjectId.isValid(pitchId)) {
+    return res.status(400).json({ message: 'Invalid pitch ID format' });
+  }
   const escrow = await Escrow.findById(escrowId);
   if (!escrow) return res.status(404).json({ message: 'Escrow not found' });
   if (String(escrow.creatorId) !== String(req.user._id)) return res.status(403).json({ message: 'Not creator' });
@@ -29,7 +36,8 @@ exports.createSubmission = async (req, res) => {
       submissionId: submission._id,
       escrowId,
       referenceId: submission._id,
-      link: '/dashboard',
+      entityId: submission._id,
+      link: `/dashboard?submissionId=${submission._id}&pitchId=${pitchId || ''}`,
       message: 'New work has been submitted for your review'
     }
   });
@@ -61,6 +69,7 @@ exports.acceptSubmission = async (req, res) => {
       submissionId: submission._id,
       escrowId: submission.escrowId,
       referenceId: submission.escrowId,
+      entityId: submission._id,
       link: '/dashboard',
       message: 'Payment was released for your completed work'
     }
@@ -88,6 +97,7 @@ exports.rejectSubmission = async (req, res) => {
       disputeId: dispute._id,
       reason,
       referenceId: dispute._id,
+      entityId: dispute._id,
       link: '/dashboard',
       message: reason || 'A dispute was opened for your submission'
     }
