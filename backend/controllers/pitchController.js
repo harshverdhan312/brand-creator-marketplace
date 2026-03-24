@@ -2,10 +2,12 @@ const Pitch = require('../models/Pitch');
 const Escrow = require('../models/Escrow');
 const Notification = require('../models/Notification');
 const escrowService = require('../utils/escrowService');
+const mongoose = require('mongoose');
 
 exports.createPitch = async (req, res) => {
   const { brandId, message, priceAmount, priceUnit, currency, contentIdea, timelineDays, platforms, contentCount, frequency, pricePerContent } = req.body;
   if (!brandId) return res.status(400).json({ message: 'brandId required' });
+  if (!mongoose.Types.ObjectId.isValid(brandId)) return res.status(400).json({ message: 'Invalid brand ID format' });
   if (!message || !message.trim()) return res.status(400).json({ message: 'Pitch message is required' });
   if (priceAmount == null || priceAmount < 0) return res.status(400).json({ message: 'Price amount cannot be negative' });
   if (pricePerContent != null && pricePerContent < 0) return res.status(400).json({ message: 'Price per content cannot be negative' });
@@ -41,6 +43,7 @@ exports.createPitch = async (req, res) => {
     payload: {
       pitchId: pitch._id,
       referenceId: pitch._id,
+      entityId: pitch._id,
       link: `/pitches/${pitch._id}`,
       message: 'You received a new pitch'
     }
@@ -78,7 +81,8 @@ exports.rejectPitch = async (req, res) => {
       pitchId: pitch._id,
       brandMessage: message,
       referenceId: pitch._id,
-      link: `/pitches/${pitch._id}`,
+      entityId: pitch._id,
+      link: '/pitches',
       message: message || 'Your pitch was rejected'
     }
   });
@@ -109,7 +113,8 @@ exports.acceptPitch = async (req, res) => {
       escrowId: escrow._id,
       brandMessage: message,
       referenceId: pitch._id,
-      link: `/messages`,
+      entityId: pitch._id,
+      link: `/messages?userId=${req.user._id}`,
       message: message || 'Your pitch was accepted'
     }
   });

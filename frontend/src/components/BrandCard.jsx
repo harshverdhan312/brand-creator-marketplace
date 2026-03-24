@@ -13,6 +13,7 @@ export default function BrandCard({ brand }) {
   const [pricePerContent, setPricePerContent] = useState('')
   const [contentIdea, setContentIdea] = useState('')
   const [timelineDays, setTimelineDays] = useState('')
+  const [fieldError, setFieldError] = useState('')
   const { add } = useContext(NotificationContext)
 
   const handlePitch = async (e) => {
@@ -21,6 +22,7 @@ export default function BrandCard({ brand }) {
     const ppcNum = Number(pricePerContent)
     const countNum = Number(contentCount)
     const timelineNum = timelineDays ? Number(timelineDays) : 0
+    setFieldError('')
     if (!message.trim()) {
       if (add) add('Pitch message is required', 'error')
       return
@@ -34,11 +36,15 @@ export default function BrandCard({ brand }) {
       return
     }
     if (countNum < 1) {
-      if (add) add('Number of deliverables must be at least 1', 'error')
+      const msg = 'Number of deliverables must be at least 1'
+      setFieldError(msg)
+      if (add) add(msg, 'error')
       return
     }
     if (priceNum < 0 || ppcNum < 0 || timelineNum < 0) {
-      if (add) add('Values cannot be negative', 'error')
+      const msg = 'Values cannot be negative'
+      setFieldError(msg)
+      if (add) add(msg, 'error')
       return
     }
       try {
@@ -65,6 +71,7 @@ export default function BrandCard({ brand }) {
       setPricePerContent('')
       setContentIdea('')
       setTimelineDays('')
+      setFieldError('')
     } catch (err) {
         const msg = err?.response?.data?.message || 'Failed to send pitch'
         if (add) add(msg, 'error')
@@ -107,7 +114,7 @@ export default function BrandCard({ brand }) {
               <div className="w-1/3">
                 <label htmlFor={`content-count-${brand._id}`} className="block text-xs font-mono text-cyan-200/50 mb-1 uppercase tracking-wider">Number of Deliverables</label>
                 <input id={`content-count-${brand._id}`} required type="number" min="1" className="input-dark" placeholder="e.g. 3" value={contentCount} onChange={e => setContentCount(e.target.value)} />
-                <div className="text-[10px] text-cyan-200/35 mt-1">Total posts/videos/items in this campaign.</div>
+                <div className="text-[10px] text-cyan-200/35 mt-1">Total posts/videos/items in this campaign. Example: 3 reels + 2 stories = 5.</div>
               </div>
               <div className="flex-1">
                 <label className="block text-xs font-mono text-cyan-200/50 mb-1 uppercase tracking-wider">Frequency</label>
@@ -131,6 +138,7 @@ export default function BrandCard({ brand }) {
             <div className="flex justify-end">
               <button type="submit" className="btn-action btn-success">Send Pitch</button>
             </div>
+            {fieldError && <div className="text-xs text-red-300">{fieldError}</div>}
         </form>
       )}
     </div>

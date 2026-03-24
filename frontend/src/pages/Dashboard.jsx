@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import { myPitches as fetchMyPitches, getPitchesForBrand } from '../services/pitchService'
 import { getSubmissionsForBrand, acceptSubmission, rejectSubmission, getSubmissionsForCreator, createSubmission } from '../services/submissionService'
@@ -38,6 +39,7 @@ export default function Dashboard() {
   const [creatorSubmissions, setCreatorSubmissions] = useState([])
   const [viewing, setViewing] = useState(null) // { pitchId }
   const { add } = React.useContext(NotificationContext)
+  const [searchParams] = useSearchParams()
 
   useEffect(() => {
     if (!user) return
@@ -53,6 +55,13 @@ export default function Dashboard() {
       getSubmissionsForCreator().then(r => setCreatorSubmissions(r.data)).catch(()=>{})
     }
   }, [user])
+
+  useEffect(() => {
+    const pitchId = searchParams.get('pitchId')
+    if (user?.role === 'brand' && pitchId) {
+      setViewing({ pitchId, submissionId: searchParams.get('submissionId') || null })
+    }
+  }, [searchParams, user])
 
   return (
     <div>
@@ -123,8 +132,8 @@ export default function Dashboard() {
               <button onClick={() => { setViewing(null); getSubmissionsForBrand().then(r => setBrandSubmissions(r.data)).catch(()=>{}) }} className="btn-action btn-ghost text-xs">Close</button>
             </div>
             <div className="space-y-4">
-              {brandSubmissions.filter(s => String(s.pitchId) === String(viewing.pitchId)).map(s => (
-                <div key={s._id} className="p-4 rounded-lg bg-surface/50 border border-border-dim">
+               {brandSubmissions.filter(s => String(s.pitchId) === String(viewing.pitchId)).map(s => (
+                 <div key={s._id} className={`p-4 rounded-lg bg-surface/50 border ${String(s._id) === String(viewing.submissionId) ? 'border-neon-blue shadow-neon-glow' : 'border-border-dim'}`}>
                   <div className="text-xs font-mono text-cyan-200/35">Submitted: {new Date(s.createdAt).toLocaleString()}</div>
                   <div className="mt-3">
                     <div className="text-xs font-mono text-cyan-200/50 uppercase tracking-wider mb-1">Deliverables</div>

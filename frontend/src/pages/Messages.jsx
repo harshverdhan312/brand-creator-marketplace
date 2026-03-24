@@ -131,16 +131,10 @@ export default function Messages() {
               <ul className="space-y-1">
                 {searchResults.map(u => (
                   <li key={u._id}>
-                     <button
-                       onClick={() => setSelectedConversation(u._id)}
-                       className={`text-left w-full py-2.5 px-3 rounded-lg text-sm transition-all duration-200 ${
-                         selectedConversation === u._id
-                           ? 'bg-neon-pink/10 text-neon-pink border border-neon-pink/20'
-                           : 'text-cyan-200/40 hover:bg-surface-light hover:text-cyan-200/60 border border-transparent'
-                       }`}
-                    >
+                    <div className="text-left w-full py-2.5 px-3 rounded-lg text-sm border border-transparent text-cyan-200/40">
                       {u.name} <span className="text-xs text-cyan-200/20 ml-1">({u.role})</span>
-                    </button>
+                      <div className="text-[11px] text-cyan-200/30 mt-1">Send a pitch and get accepted to unlock messaging.</div>
+                    </div>
                   </li>
                 ))}
               </ul>

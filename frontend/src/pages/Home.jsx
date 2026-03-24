@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react'
+import { useSearchParams } from 'react-router-dom'
 // campaigns removed; showing brands/creators only
 import { AuthContext } from '../context/AuthContext'
 import { getBrands, getCreators } from '../services/userService'
@@ -10,6 +11,7 @@ export default function Home() {
   const [campaigns, setCampaigns] = useState([])
   const [brands, setBrands] = useState([])
   const [creators, setCreators] = useState([])
+  const [searchParams] = useSearchParams()
 
   const { user } = useContext(AuthContext)
 
@@ -64,6 +66,11 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {creators.map(c => <CreatorCard key={c._id} creator={c} />)}
           </div>
+          {searchParams.get('connectCreatorId') && (
+            <div className="mt-6 p-3 rounded-lg border border-neon-blue/20 bg-neon-blue/5 text-xs text-cyan-200/60">
+              Open the creator profile and use the pitch flow to connect. Messaging unlocks after pitch acceptance.
+            </div>
+          )}
         </section>
       )}
     </div>

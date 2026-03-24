@@ -8,6 +8,7 @@ export default function Register() {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'creator', bio: '', instagram: '', linkedin: '', website: '' })
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const { login } = useContext(AuthContext)
   const navigate = useNavigate()
 
@@ -40,10 +41,7 @@ export default function Register() {
         socialLinks: { instagram: form.instagram, linkedin: form.linkedin, website: form.website }
       }
       const res = await registerApi(payload)
-      // server returns user.id — normalize to _id for frontend
-      const userObj = res.data.user || {}
-      const user = { ...userObj, _id: userObj.id }
-      login(res.data.token, user)
+      login(res.data.token, res.data.user)
       navigate('/dashboard')
     } catch (err) {
       const msg = err?.response?.data?.message || 'Registration failed'
@@ -72,33 +70,38 @@ export default function Register() {
           )}
           <div>
             <label className="block text-xs font-mono text-cyan-200/50 mb-1.5 uppercase tracking-wider">Name</label>
-            <input className="input-dark" placeholder="Full name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+            <input className="input-dark" placeholder="Full name" value={form.name} onChange={e => { setError(''); setForm({ ...form, name: e.target.value }) }} />
           </div>
           <div>
             <label className="block text-xs font-mono text-cyan-200/50 mb-1.5 uppercase tracking-wider">Email</label>
-            <input className="input-dark" placeholder="you@example.com" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+            <input className="input-dark" placeholder="you@example.com" type="email" value={form.email} onChange={e => { setError(''); setForm({ ...form, email: e.target.value }) }} />
           </div>
           <div>
             <label className="block text-xs font-mono text-cyan-200/50 mb-1.5 uppercase tracking-wider">Password</label>
-            <input type="password" className="input-dark" placeholder="••••••••" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+            <div className="relative">
+              <input type={showPassword ? 'text' : 'password'} className="input-dark pr-10" placeholder="••••••••" value={form.password} onChange={e => { setError(''); setForm({ ...form, password: e.target.value }) }} />
+              <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 text-cyan-200/45 hover:text-cyan-200/80 text-xs" onClick={() => setShowPassword(s => !s)} aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
           <div>
             <label className="block text-xs font-mono text-cyan-200/50 mb-1.5 uppercase tracking-wider">Role</label>
-            <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} className="input-dark cursor-pointer">
+            <select value={form.role} onChange={e => { setError(''); setForm({ ...form, role: e.target.value }) }} className="input-dark cursor-pointer">
               <option value="creator">Creator</option>
               <option value="brand">Brand</option>
             </select>
           </div>
           <div>
             <label className="block text-xs font-mono text-cyan-200/50 mb-1.5 uppercase tracking-wider">Bio</label>
-            <textarea className="input-dark min-h-[60px]" placeholder="Tell us about yourself" value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} />
+            <textarea className="input-dark min-h-[60px]" placeholder="Tell us about yourself" value={form.bio} onChange={e => { setError(''); setForm({ ...form, bio: e.target.value }) }} />
           </div>
           <div className="divider my-2" />
           <div className="text-xs font-mono text-cyan-200/30 uppercase tracking-wider mb-2">Social Links (optional)</div>
           <div className="space-y-3">
-            <input className="input-dark" placeholder="Instagram URL" value={form.instagram} onChange={e => setForm({ ...form, instagram: e.target.value })} />
-            <input className="input-dark" placeholder="LinkedIn URL" value={form.linkedin} onChange={e => setForm({ ...form, linkedin: e.target.value })} />
-            <input className="input-dark" placeholder="Website URL" value={form.website} onChange={e => setForm({ ...form, website: e.target.value })} />
+            <input className="input-dark" placeholder="Instagram URL" value={form.instagram} onChange={e => { setError(''); setForm({ ...form, instagram: e.target.value }) }} />
+            <input className="input-dark" placeholder="LinkedIn URL" value={form.linkedin} onChange={e => { setError(''); setForm({ ...form, linkedin: e.target.value }) }} />
+            <input className="input-dark" placeholder="Website URL" value={form.website} onChange={e => { setError(''); setForm({ ...form, website: e.target.value }) }} />
           </div>
           <button disabled={submitting} className="w-full btn-action btn-success py-3 mt-2 font-semibold disabled:opacity-50">
             {submitting ? 'Creating Account...' : 'Create Account'}

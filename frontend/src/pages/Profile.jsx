@@ -90,6 +90,7 @@ export default function Profile() {
 
   const isOwn = !id || (user && user._id === profile._id)
   const isBrandViewingCreator = !!id && !isOwn && user?.role === 'brand' && profile?.role === 'creator'
+  const connectLink = id ? `/?${new URLSearchParams({ connectCreatorId: String(id) }).toString()}` : '/'
 
   return (
     <div className="max-w-2xl mx-auto card-dark p-8">
@@ -118,10 +119,10 @@ export default function Profile() {
               <>
                 <button onClick={() => navigate('/messages')} className="btn-action btn-primary text-xs">Messages Overview</button>
                 <button onClick={() => navigate(`/messages?userId=${id}`)} className="btn-action btn-success text-xs">Message</button>
-                <button onClick={() => navigate('/dashboard')} className="btn-action btn-ghost text-xs">Hire / Invite</button>
+                <button onClick={() => navigate(connectLink)} className="btn-action btn-ghost text-xs">Hire / Invite</button>
               </>
             ) : (
-              <button onClick={() => navigate('/')} className="btn-action btn-primary text-xs">Send Pitch to Connect</button>
+              <button onClick={() => navigate(connectLink)} className="btn-action btn-primary text-xs">Send Pitch to Connect</button>
             )}
           </div>
           {!canMessage && (

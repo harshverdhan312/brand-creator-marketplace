@@ -1,11 +1,30 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
+import { getNotifications } from '../services/notificationService'
 
 export default function Navbar() {
   const { user, logout } = useContext(AuthContext)
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    const loadUnread = async () => {
+      if (!user) {
+        setUnreadCount(0)
+        return
+      }
+      try {
+        const r = await getNotifications()
+        const unread = (r.data || []).filter((n) => !n.read).length
+        setUnreadCount(unread)
+      } catch (e) {
+        setUnreadCount(0)
+      }
+    }
+    loadUnread()
+  }, [user, location.pathname])
 
   const linkClass = (path) =>
     `px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
@@ -15,7 +34,7 @@ export default function Navbar() {
     }`
 
   const mobileLinkClass = (path) =>
-    `block px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ${
+    `block px-3 py-2.5 rounded-md text-xs sm:text-sm font-medium transition-all duration-200 truncate ${
       location.pathname === path
         ? 'text-neon-blue bg-neon-blue/10 border border-neon-blue/20'
         : 'text-cyan-200/70 hover:text-neon-green hover:bg-neon-green/5'
@@ -40,7 +59,10 @@ export default function Navbar() {
             <>
               <Link to="/dashboard" className={linkClass('/dashboard')}>Dashboard</Link>
               <Link to="/messages" className={linkClass('/messages')}>Messages</Link>
-              <Link to="/notifications" className={linkClass('/notifications')}>Notifications</Link>
+              <Link to="/notifications" className={`${linkClass('/notifications')} inline-flex items-center gap-2`}>
+                Notifications
+                {unreadCount > 0 && <span className="badge badge-cyan animate-pulse">{unreadCount}</span>}
+              </Link>
               <Link to="/profile" className={linkClass('/profile')}>Profile</Link>
               {user.role === 'creator' && <Link to="/my-brands" className={linkClass('/my-brands')}>My Brands</Link>}
               {user.role === 'brand' && <Link to="/working-creators" className={linkClass('/working-creators')}>Creators</Link>}
@@ -71,20 +93,23 @@ export default function Navbar() {
 
       {/* Mobile dropdown menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-border-dim bg-bg-dark/95 backdrop-blur-md px-4 py-3 space-y-1">
+        <div className="md:hidden border-t border-border-dim bg-bg-dark/95 backdrop-blur-md px-3 py-3 space-y-1 overflow-y-auto max-h-[60vh]">
           <Link to="/" className={mobileLinkClass('/')} onClick={closeMenu}>Home</Link>
           {user ? (
             <>
               <Link to="/dashboard" className={mobileLinkClass('/dashboard')} onClick={closeMenu}>Dashboard</Link>
               <Link to="/messages" className={mobileLinkClass('/messages')} onClick={closeMenu}>Messages</Link>
-              <Link to="/notifications" className={mobileLinkClass('/notifications')} onClick={closeMenu}>Notifications</Link>
+              <Link to="/notifications" className={`${mobileLinkClass('/notifications')} inline-flex items-center gap-2`} onClick={closeMenu}>
+                Notifications
+                {unreadCount > 0 && <span className="badge badge-cyan animate-pulse">{unreadCount}</span>}
+              </Link>
               <Link to="/profile" className={mobileLinkClass('/profile')} onClick={closeMenu}>Profile</Link>
               {user.role === 'creator' && <Link to="/my-brands" className={mobileLinkClass('/my-brands')} onClick={closeMenu}>My Brands</Link>}
               {user.role === 'brand' && <Link to="/working-creators" className={mobileLinkClass('/working-creators')} onClick={closeMenu}>Creators</Link>}
               {user.role === 'admin' && <Link to="/admin" className={mobileLinkClass('/admin')} onClick={closeMenu}>Admin</Link>}
               <button
                 onClick={() => { closeMenu(); logout(); }}
-                className="block w-full text-left px-4 py-2.5 rounded-md text-sm font-medium text-pink-400/80 hover:text-pink-300 hover:bg-pink-500/10 transition-all duration-200"
+                className="block w-full text-left px-3 py-2.5 rounded-md text-xs sm:text-sm font-medium text-pink-400/80 hover:text-pink-300 hover:bg-pink-500/10 transition-all duration-200"
               >
                 Logout
               </button>
