@@ -19,6 +19,11 @@ const errorHandler = (err, req, res, next) => {
     return res.status(409).json({ message: `${field} already exists` });
   }
 
+  // Handle CSRF token errors
+  if (err.code === 'EBADCSRFTOKEN') {
+    return res.status(403).json({ message: 'CSRF token invalid or missing' });
+  }
+
   const status = err.status || 500;
   res.status(status).json({ message: err.message || 'Server Error' });
 };

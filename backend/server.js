@@ -1,8 +1,8 @@
 require('dotenv').config();
 require('express-async-errors');
 const express = require('express');
-const crypto = require('crypto');
 const cors = require('cors');
+const csrf = require('csurf');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
@@ -23,6 +23,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   process.env.FRONTEND_URL
 ].filter(Boolean);
+const isProduction = process.env.NODE_ENV === 'production';
+const CSRF_COOKIE_NAME = '_csrf';
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -33,34 +35,23 @@ app.use(cors({
       callback(null, false);
     }
   },
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token']
 }));
 app.use(express.json());
 app.use(cookieParser());
 
-const csrfSafeMethods = new Set(['GET', 'HEAD', 'OPTIONS']);
-app.use((req, res, next) => {
-  const isSafe = csrfSafeMethods.has(req.method);
-  if (isSafe) {
-    if (!req.cookies.csrfToken) {
-      const csrfToken = crypto.randomBytes(24).toString('hex');
-      res.cookie('csrfToken', csrfToken, {
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production'
-      });
-    }
-    return next();
+const csrfProtection = csrf({
+  cookie: {
+    key: CSRF_COOKIE_NAME,
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax'
   }
-
-  const hasBearer = Boolean(req.headers.authorization && req.headers.authorization.startsWith('Bearer '));
-  if (hasBearer) return next();
-
-  const csrfCookie = req.cookies.csrfToken;
-  const csrfHeader = req.headers['x-csrf-token'];
-  if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
-    return res.status(403).json({ message: 'CSRF token invalid or missing' });
-  }
-  return next();
+});
+app.use(csrfProtection);
+app.get('/api/csrf-token', (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
 });
 
 // routes
