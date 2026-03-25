@@ -24,6 +24,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL
 ].filter(Boolean);
 const isProduction = process.env.NODE_ENV === 'production';
+const CSRF_COOKIE_NAME = '_csrf';
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -42,15 +43,16 @@ app.use(cookieParser());
 
 const csrfProtection = csrf({
   cookie: {
+    key: CSRF_COOKIE_NAME,
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'none' : 'lax'
   }
 });
-app.get('/api/csrf-token', csrfProtection, (req, res) => {
+app.use(csrfProtection);
+app.get('/api/csrf-token', (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 });
-app.use(csrfProtection);
 
 // routes
 app.use('/api/auth', authRoutes);

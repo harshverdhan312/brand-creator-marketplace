@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { signAccessToken, signRefreshToken, verifyToken } = require('../utils/jwt');
+const CSRF_COOKIE_NAME = '_csrf';
 
 // Register a new user
 exports.register = async (req, res) => {
@@ -67,7 +68,7 @@ exports.refresh = async (req, res) => {
 // Logout - clear refresh cookie
 exports.logout = async (req, res) => {
   res.clearCookie('refreshToken');
-  res.clearCookie('_csrf');
+  res.clearCookie(CSRF_COOKIE_NAME);
   res.json({ message: 'Logged out' });
 };
 

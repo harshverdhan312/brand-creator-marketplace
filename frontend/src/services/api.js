@@ -10,14 +10,16 @@ let csrfTokenPromise = null
 
 export async function fetchCsrfToken() {
   if (csrfToken) return csrfToken
-  if (!csrfTokenPromise) {
-    csrfTokenPromise = api.get('/csrf-token').then((res) => {
-      csrfToken = res?.data?.csrfToken || null
-      return csrfToken
-    }).finally(() => {
-      csrfTokenPromise = null
-    })
-  }
+  if (csrfTokenPromise) return csrfTokenPromise
+  csrfTokenPromise = api.get('/csrf-token').then((res) => {
+    csrfToken = res?.data?.csrfToken || null
+    return csrfToken
+  }).catch(() => {
+    csrfToken = null
+    return null
+  }).finally(() => {
+    csrfTokenPromise = null
+  })
   return csrfTokenPromise
 }
 
