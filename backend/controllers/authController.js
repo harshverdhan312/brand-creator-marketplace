@@ -1,5 +1,4 @@
 const bcrypt = require('bcryptjs');
-const crypto = require('crypto');
 const User = require('../models/User');
 const { signAccessToken, signRefreshToken, verifyToken } = require('../utils/jwt');
 
@@ -30,10 +29,8 @@ exports.register = async (req, res) => {
   const user = await User.create(createPayload);
   const accessToken = signAccessToken({ id: user._id });
   const refreshToken = signRefreshToken({ id: user._id });
-  const csrfToken = crypto.randomBytes(24).toString('hex');
   // set refresh token as httpOnly cookie
   res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 });
-  res.cookie('csrfToken', csrfToken, { sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 });
   res.status(201).json({ token: accessToken, user: { _id: user._id, name: user.name, email: user.email, role: user.role } });
 };
 
@@ -46,9 +43,7 @@ exports.login = async (req, res) => {
   if (!match) return res.status(400).json({ message: 'Invalid credentials' });
   const accessToken = signAccessToken({ id: user._id });
   const refreshToken = signRefreshToken({ id: user._id });
-  const csrfToken = crypto.randomBytes(24).toString('hex');
   res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 });
-  res.cookie('csrfToken', csrfToken, { sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 });
   res.json({ token: accessToken, user: { _id: user._id, name: user.name, email: user.email, role: user.role } });
 };
 
@@ -62,9 +57,7 @@ exports.refresh = async (req, res) => {
     if (!user) return res.status(401).json({ message: 'Invalid token user' });
     const accessToken = signAccessToken({ id: user._id });
     const newRefresh = signRefreshToken({ id: user._id });
-    const csrfToken = crypto.randomBytes(24).toString('hex');
     res.cookie('refreshToken', newRefresh, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 });
-    res.cookie('csrfToken', csrfToken, { sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 });
     return res.json({ token: accessToken, user });
   } catch (err) {
     return res.status(401).json({ message: 'Invalid refresh token' });
@@ -74,7 +67,7 @@ exports.refresh = async (req, res) => {
 // Logout - clear refresh cookie
 exports.logout = async (req, res) => {
   res.clearCookie('refreshToken');
-  res.clearCookie('csrfToken');
+  res.clearCookie('_csrf');
   res.json({ message: 'Logged out' });
 };
 
