@@ -90,6 +90,7 @@ export default function Dashboard() {
                       <span className="font-semibold text-white">{p.creatorId?.name || 'Unknown'}</span>
                     </div>
                     <p className="text-sm text-cyan-200/50">{p.message}</p>
+                    <div className="text-xs font-mono text-cyan-200/35 mt-2">Pitch submitted on: {new Date(p.createdAt).toLocaleString()}</div>
                     <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono text-cyan-200/35">
                       <span>₹{p.priceAmount} {p.priceUnit}</span>
                       <span>Platforms: {(p.platforms || []).join(', ')}</span>
@@ -222,6 +223,7 @@ function CreatorPitchItem({ p, refresh }) {
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-white">{p.brand?.name}</div>
           <p className="text-sm text-cyan-200/50 mt-1">{p.message}</p>
+          <div className="text-xs font-mono text-cyan-200/35 mt-2">Pitch submitted on: {new Date(p.createdAt).toLocaleString()}</div>
         </div>
         <div className="text-right flex-shrink-0">
           <div className="font-mono font-semibold text-white">₹{p.priceAmount}</div>

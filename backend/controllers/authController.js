@@ -1,7 +1,13 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
-const { signAccessToken, signRefreshToken, verifyToken } = require('../utils/jwt');
-const CSRF_COOKIE_NAME = '_csrf';
+const jwt = require('jsonwebtoken');
+
+const signAuthToken = (user) =>
+  jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
 
 // Register a new user
 exports.register = async (req, res) => {
@@ -28,11 +34,8 @@ exports.register = async (req, res) => {
   const createPayload = { name, email, password: hashed, role, bio };
   if (socialLinks && typeof socialLinks === 'object') createPayload.socialLinks = socialLinks;
   const user = await User.create(createPayload);
-  const accessToken = signAccessToken({ id: user._id });
-  const refreshToken = signRefreshToken({ id: user._id });
-  // set refresh token as httpOnly cookie
-  res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 });
-  res.status(201).json({ token: accessToken, user: { _id: user._id, name: user.name, email: user.email, role: user.role } });
+  const token = signAuthToken(user);
+  res.status(201).json({ token, user: { _id: user._id, name: user.name, email: user.email, role: user.role } });
 };
 
 // Login
@@ -42,37 +45,18 @@ exports.login = async (req, res) => {
   if (!user) return res.status(400).json({ message: 'Invalid credentials' });
   const match = await bcrypt.compare(password, user.password);
   if (!match) return res.status(400).json({ message: 'Invalid credentials' });
-  const accessToken = signAccessToken({ id: user._id });
-  const refreshToken = signRefreshToken({ id: user._id });
-  res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 });
-  res.json({ token: accessToken, user: { _id: user._id, name: user.name, email: user.email, role: user.role } });
+  const token = signAuthToken(user);
+  res.json({ token, user: { _id: user._id, name: user.name, email: user.email, role: user.role } });
 };
 
-// Refresh access token using refresh token cookie
-exports.refresh = async (req, res) => {
-  const { refreshToken } = req.cookies || {};
-  if (!refreshToken) return res.status(401).json({ message: 'No refresh token' });
-  try {
-    const payload = verifyToken(refreshToken, true);
-    const user = await User.findById(payload.id).select('-password');
-    if (!user) return res.status(401).json({ message: 'Invalid token user' });
-    const accessToken = signAccessToken({ id: user._id });
-    const newRefresh = signRefreshToken({ id: user._id });
-    res.cookie('refreshToken', newRefresh, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 });
-    return res.json({ token: accessToken, user });
-  } catch (err) {
-    return res.status(401).json({ message: 'Invalid refresh token' });
-  }
-};
-
-// Logout - clear refresh cookie
+// Logout (JWT handled client-side)
 exports.logout = async (req, res) => {
-  res.clearCookie('refreshToken');
-  res.clearCookie(CSRF_COOKIE_NAME);
   res.json({ message: 'Logged out' });
 };
 
 // Get current user
 exports.me = async (req, res) => {
-  res.json(req.user);
+  const user = await User.findById(req.user.id).select('_id name email role');
+  if (!user) return res.status(401).json({ message: 'User not found' });
+  res.json({ user });
 };

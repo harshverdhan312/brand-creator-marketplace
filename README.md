@@ -4,7 +4,7 @@ A production-ready MERN scaffold for a brand–creator collaboration marketplace
 
 ## Project layout
 
-- `backend/` — Express API, MongoDB (Mongoose), JWT auth (access + refresh), controllers, routes, models.
+- `backend/` — Express API, MongoDB (Mongoose), JWT auth (Bearer token), controllers, routes, models.
 - `frontend/` — React (Vite) + Tailwind, Axios API client, contexts for Auth & Notifications, pages/components.
 
 Recent frontend additions:
@@ -15,7 +15,7 @@ Recent frontend additions:
 ## Features
 
 - Role-based users: `brand` and `creator`.
-- Authentication with access & refresh tokens (httpOnly refresh cookie).
+- Authentication with JWT Bearer token.
 - Campaigns: create, request (creator → brand), approve/reject (brand), per-piece pricing in INR.
 - Pitches: creators can pitch to campaigns or directly to brands; brands can accept/reject.
 - Escrow simulation: escrow created on acceptance/approval; working lists for brands/creators.
@@ -36,8 +36,7 @@ Create a `.env` in `backend/` with values similar to:
 
 ```
 MONGO_URI=mongodb://localhost:27017/brand_creator_db
-JWT_ACCESS_SECRET=replace_me
-JWT_REFRESH_SECRET=replace_me_too
+JWT_SECRET=replace_me
 PORT=5136
 NODE_ENV=development
 ```
@@ -62,7 +61,7 @@ npm install
 npm run dev
 ```
 
-The frontend is configured to call the API at `http://localhost:5136/api` and uses `withCredentials` to support refresh cookies.
+The frontend is configured to call the API at `http://localhost:5136/api` and sends `Authorization: Bearer <token>` headers.
 
 If you add new backend models (like the `rejectionReason` field on `Submission`) while your DB already has `Submission` documents, you don't strictly need a migration — Mongoose will accept the new field when present. If you want to backfill or ensure the field exists with defaults, use a small Mongo script (example given below).
 
@@ -71,7 +70,7 @@ If you add new backend models (like the `rejectionReason` field on `Submission`)
 Backend (example):
 - `POST /api/auth/register` — register (accepts `bio` and `socialLinks`)
 - `POST /api/auth/login`
-- `POST /api/auth/refresh` — refresh access token (uses refresh cookie)
+- `GET /api/auth/me` — fetch current authenticated user
 - `GET /api/users/brands`, `GET /api/users/creators`
 - `GET /api/users/:id` — public profile view
 - `GET/PUT /api/users/me/profile` — current user profile
