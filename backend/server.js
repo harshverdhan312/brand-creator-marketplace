@@ -2,8 +2,6 @@ require('dotenv').config();
 require('express-async-errors');
 const express = require('express');
 const cors = require('cors');
-const csrf = require('csurf');
-const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const pitchRoutes = require('./routes/pitchRoutes');
@@ -23,8 +21,6 @@ const allowedOrigins = [
   'http://localhost:5173',
   process.env.FRONTEND_URL
 ].filter(Boolean);
-const isProduction = process.env.NODE_ENV === 'production';
-const CSRF_COOKIE_NAME = '_csrf';
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -36,23 +32,9 @@ app.use(cors({
     }
   },
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token']
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
-app.use(cookieParser());
-
-const csrfProtection = csrf({
-  cookie: {
-    key: CSRF_COOKIE_NAME,
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax'
-  }
-});
-app.use(csrfProtection);
-app.get('/api/csrf-token', (req, res) => {
-  res.json({ csrfToken: req.csrfToken() });
-});
 
 // routes
 app.use('/api/auth', authRoutes);
