@@ -6,7 +6,7 @@ const signAuthToken = (user) =>
   jwt.sign(
     { id: user._id, role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 
 // Register a new user
@@ -56,7 +56,7 @@ exports.logout = async (req, res) => {
 
 // Get current user
 exports.me = async (req, res) => {
-  const user = await User.findById(req.user.id).select('_id name email role');
+  const user = await User.findById(req.user._id).select('_id name email role');
   if (!user) return res.status(401).json({ message: 'User not found' });
   res.json({ user });
 };

@@ -9,10 +9,15 @@ const authLimiter = rateLimit({
   max: 20, // 20 requests per window
   message: { message: 'Too many requests, please try again later' }
 });
+const sessionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 120,
+  message: { message: 'Too many requests, please try again later' }
+});
 
 router.post('/register', authLimiter, authController.register);
 router.post('/login', authLimiter, authController.login);
-router.post('/logout', authController.logout);
-router.get('/me', authMiddleware, authController.me);
+router.post('/logout', sessionLimiter, authController.logout);
+router.get('/me', sessionLimiter, authMiddleware, authController.me);
 
 module.exports = router;

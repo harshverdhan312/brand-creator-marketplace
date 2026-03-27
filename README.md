@@ -36,7 +36,8 @@ Create a `.env` in `backend/` with values similar to:
 
 ```
 MONGO_URI=mongodb://localhost:27017/brand_creator_db
-JWT_SECRET=replace_me
+JWT_SECRET=replace_me_with_a_long_random_secret_used_to_sign_and_verify_tokens
+JWT_EXPIRES_IN=7d
 PORT=5136
 NODE_ENV=development
 ```
